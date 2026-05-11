@@ -1,0 +1,8 @@
+{
+  "name": "tienda-camas",
+  "private": true,
+  "scripts": {
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "start": "cd backend && node src/server.js"
+  }
+}
