@@ -19,58 +19,36 @@ export default function VentasPage() {
       if (filtroHasta) params.hasta = filtroHasta;
       const data = await ventasAPI.getAll(params);
       setVentas(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   }
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [vData] = await Promise.all([vendedoresAPI.getAll()]);
-        setVendedores(vData);
-      } catch (err) { console.error(err); }
-    }
-    load();
-  }, []);
-
-  useEffect(() => {
+    vendedoresAPI.getAll().then(setVendedores).catch(console.error);
     loadVentas();
   }, []);
 
   async function eliminarVenta(id) {
     if (!confirm('¿Eliminar esta venta? Esta acción es irreversible.')) return;
-    try {
-      await ventasAPI.remove(id);
-      loadVentas();
-    } catch (err) {
-      alert(err.message);
-    }
+    try { await ventasAPI.remove(id); loadVentas(); }
+    catch (err) { alert(err.message); }
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Ventas</h2>
-        <Link
-          to="/ventas/nueva"
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-        >
+        <h3 className="text-lg font-semibold text-gray-900">Ventas</h3>
+        <Link to="/ventas/nueva" className="bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition-colors">
           + Nueva Venta
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-5 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Vendedor</label>
-            <select
-              value={filtroVendedor}
-              onChange={(e) => setFiltroVendedor(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            >
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Vendedor</label>
+            <select value={filtroVendedor} onChange={(e) => setFiltroVendedor(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900">
               <option value="">Todos</option>
               {vendedores.map((v) => (
                 <option key={v.id} value={v.id}>{v.nombre} {v.apellido}</option>
@@ -78,80 +56,56 @@ export default function VentasPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Desde</label>
-            <input
-              type="date"
-              value={filtroDesde}
-              onChange={(e) => setFiltroDesde(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            />
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Desde</label>
+            <input type="date" value={filtroDesde} onChange={(e) => setFiltroDesde(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Hasta</label>
-            <input
-              type="date"
-              value={filtroHasta}
-              onChange={(e) => setFiltroHasta(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            />
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Hasta</label>
+            <input type="date" value={filtroHasta} onChange={(e) => setFiltroHasta(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" />
           </div>
           <div className="flex items-end">
-            <button
-              onClick={loadVentas}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors w-full"
-            >
+            <button onClick={loadVentas}
+              className="w-full bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition-colors">
               Filtrar
             </button>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-600">ID</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-600">Fecha</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-600">Vendedor</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">Total</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-600">Acciones</th>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">ID</th>
+                  <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Fecha</th>
+                  <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Vendedor</th>
+                  <th className="text-right py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Total</th>
+                  <th className="text-center py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {ventas.map((v) => (
-                  <tr key={v.id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4 text-gray-600">#{v.id}</td>
-                    <td className="py-3 px-4">{new Date(v.fecha).toLocaleString('es-PE')}</td>
-                    <td className="py-3 px-4">{v.vendedor_nombre} {v.vendedor_apellido}</td>
-                    <td className="py-3 px-4 text-right font-medium">S/ {Number(v.total).toFixed(2)}</td>
-                    <td className="py-3 px-4 text-center">
-                      <Link
-                        to={`/ventas/${v.id}`}
-                        className="text-indigo-600 hover:text-indigo-800 mx-2"
-                      >
-                        Ver
-                      </Link>
-                      <button
-                        onClick={() => eliminarVenta(v.id)}
-                        className="text-red-600 hover:text-red-800 mx-2"
-                      >
-                        Eliminar
-                      </button>
+                  <tr key={v.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <td className="py-3 px-5 text-gray-500 font-mono">#{v.id}</td>
+                    <td className="py-3 px-5 text-gray-700">{new Date(v.fecha).toLocaleString('es-PE')}</td>
+                    <td className="py-3 px-5 text-gray-700">{v.vendedor_nombre} {v.vendedor_apellido}</td>
+                    <td className="py-3 px-5 text-right font-medium text-gray-900">S/ {Number(v.total).toFixed(2)}</td>
+                    <td className="py-3 px-5 text-center">
+                      <Link to={`/ventas/${v.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium mx-1.5">Ver</Link>
+                      <button onClick={() => eliminarVenta(v.id)} className="text-red-600 hover:text-red-800 text-sm font-medium mx-1.5">Eliminar</button>
                     </td>
                   </tr>
                 ))}
                 {ventas.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-500">
-                      No hay ventas registradas
-                    </td>
-                  </tr>
+                  <tr><td colSpan={5} className="text-center py-10 text-gray-400">No hay ventas registradas</td></tr>
                 )}
               </tbody>
             </table>

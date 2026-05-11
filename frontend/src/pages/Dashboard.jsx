@@ -35,67 +35,63 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   const cards = [
-    { label: 'Ventas Totales', value: stats.ventas, color: 'bg-blue-500', icon: '💰' },
-    { label: 'Vendedores', value: stats.vendedores, color: 'bg-green-500', icon: '👤' },
-    { label: 'Productos', value: stats.productos, color: 'bg-purple-500', icon: '🛏️' },
-    { label: 'Stock Bajo', value: stats.stockBajo, color: 'bg-red-500', icon: '⚠️' },
+    { label: 'Ventas Totales', value: stats.ventas, color: 'bg-blue-600' },
+    { label: 'Vendedores', value: stats.vendedores, color: 'bg-emerald-600' },
+    { label: 'Productos', value: stats.productos, color: 'bg-violet-600' },
+    { label: 'Stock Bajo', value: stats.stockBajo, color: 'bg-red-600' },
   ];
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h2>
+      <h3 className="text-lg font-semibold text-gray-900 mb-6">Resumen General</h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {cards.map((card) => (
-          <div key={card.label} className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">{card.label}</p>
-                <p className="text-3xl font-bold text-gray-800">{card.value}</p>
-              </div>
-              <div className={`${card.color} w-14 h-14 rounded-full flex items-center justify-center text-2xl`}>
-                {card.icon}
-              </div>
+          <div key={card.label} className="bg-white rounded-lg border border-gray-200">
+            <div className="p-5">
+              <p className="text-sm text-gray-500 mb-1">{card.label}</p>
+              <p className="text-2xl font-bold text-gray-900">{card.value}</p>
             </div>
+            <div className={`h-1 rounded-b-lg ${card.color}`} />
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Últimas Ventas</h3>
-          <Link to="/ventas" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+      <div className="bg-white rounded-lg border border-gray-200">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">Últimas Ventas</h3>
+          <Link to="/ventas" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
             Ver todas →
           </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="text-left py-3 px-4 font-semibold text-gray-600">#</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-600">Fecha</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-600">Vendedor</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">Total</th>
+              <tr className="border-b border-gray-100">
+                <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">#</th>
+                <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Fecha</th>
+                <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Vendedor</th>
+                <th className="text-right py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Total</th>
               </tr>
             </thead>
             <tbody>
               {ultimasVentas.map((v, i) => (
-                <tr key={v.id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-4 text-gray-600">{i + 1}</td>
-                  <td className="py-3 px-4">{new Date(v.fecha).toLocaleDateString('es-PE')}</td>
-                  <td className="py-3 px-4">{v.vendedor_nombre} {v.vendedor_apellido}</td>
-                  <td className="py-3 px-4 text-right font-medium">S/ {Number(v.total).toFixed(2)}</td>
+                <tr key={v.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <td className="py-3 px-5 text-gray-500">{i + 1}</td>
+                  <td className="py-3 px-5 text-gray-700">{new Date(v.fecha).toLocaleDateString('es-PE')}</td>
+                  <td className="py-3 px-5 text-gray-700">{v.vendedor_nombre} {v.vendedor_apellido}</td>
+                  <td className="py-3 px-5 text-right font-medium text-gray-900">S/ {Number(v.total).toFixed(2)}</td>
                 </tr>
               ))}
               {ultimasVentas.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="text-center py-8 text-gray-500">No hay ventas registradas</td>
+                  <td colSpan={4} className="text-center py-10 text-gray-400">No hay ventas registradas</td>
                 </tr>
               )}
             </tbody>

@@ -8,94 +8,82 @@ export default function VentaDetalle() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const data = await ventasAPI.getById(id);
-        setVenta(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    ventasAPI.getById(id).then(setVenta).catch(console.error).finally(() => setLoading(false));
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
+    return <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+    </div>;
   }
 
-  if (!venta) {
-    return <div className="text-center py-12 text-gray-500">Venta no encontrada</div>;
-  }
+  if (!venta) return <div className="text-center py-12 text-gray-400">Venta no encontrada</div>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Venta #{venta.id}</h2>
-        <Link to="/ventas" className="text-indigo-600 hover:text-indigo-800">← Volver</Link>
+        <h3 className="text-lg font-semibold text-gray-900">Venta #{venta.id}</h3>
+        <Link to="/ventas" className="text-sm text-blue-600 hover:text-blue-800 font-medium">← Volver</Link>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-5 mb-6">
+        <div className="grid grid-cols-3 gap-6">
           <div>
-            <p className="text-sm text-gray-500">Fecha</p>
-            <p className="font-medium">{new Date(venta.fecha).toLocaleString('es-PE')}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Fecha</p>
+            <p className="text-sm font-medium text-gray-900">{new Date(venta.fecha).toLocaleString('es-PE')}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Vendedor</p>
-            <p className="font-medium">{venta.vendedor_nombre} {venta.vendedor_apellido}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Vendedor</p>
+            <p className="text-sm font-medium text-gray-900">{venta.vendedor_nombre} {venta.vendedor_apellido}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Total</p>
-            <p className="font-bold text-xl text-indigo-600">S/ {Number(venta.total).toFixed(2)}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total</p>
+            <p className="text-lg font-bold text-gray-900">S/ {Number(venta.total).toFixed(2)}</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <h3 className="text-lg font-semibold text-gray-800 p-6 pb-2">Detalle de Productos</h3>
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">Detalle de Productos</h4>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b">
-                <th className="text-left py-3 px-4 font-semibold text-gray-600">Producto</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600">Cant.</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">Costo U.</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">P. Base U.</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">P. Final U.</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">Sobreprecio</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">Subtotal</th>
+              <tr className="border-b border-gray-100">
+                <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase">Producto</th>
+                <th className="text-center py-3 px-5 font-medium text-gray-500 text-xs uppercase">Cant.</th>
+                <th className="text-right py-3 px-5 font-medium text-gray-500 text-xs uppercase">Costo U.</th>
+                <th className="text-right py-3 px-5 font-medium text-gray-500 text-xs uppercase">P. Base</th>
+                <th className="text-right py-3 px-5 font-medium text-gray-500 text-xs uppercase">P. Final</th>
+                <th className="text-right py-3 px-5 font-medium text-gray-500 text-xs uppercase">Sobreprecio</th>
+                <th className="text-right py-3 px-5 font-medium text-gray-500 text-xs uppercase">Subtotal</th>
               </tr>
             </thead>
             <tbody>
               {venta.detalle.map((d) => (
-                <tr key={d.id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-4">
-                    <p className="font-medium">{d.producto_nombre}</p>
+                <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <td className="py-3 px-5">
+                    <p className="font-medium text-gray-900">{d.producto_nombre}</p>
                     <p className="text-xs text-gray-400">{d.producto_codigo}</p>
                   </td>
-                  <td className="py-3 px-4 text-center">{d.cantidad}</td>
-                  <td className="py-3 px-4 text-right">S/ {Number(d.costo_unitario).toFixed(2)}</td>
-                  <td className="py-3 px-4 text-right">S/ {Number(d.precio_base_unitario).toFixed(2)}</td>
-                  <td className="py-3 px-4 text-right">S/ {Number(d.precio_final_unitario).toFixed(2)}</td>
-                  <td className="py-3 px-4 text-right">
-                    <span className={Number(d.sobreprecio_unitario) > 0 ? 'text-green-600 font-medium' : ''}>
+                  <td className="py-3 px-5 text-center text-gray-700">{d.cantidad}</td>
+                  <td className="py-3 px-5 text-right text-gray-700">S/ {Number(d.costo_unitario).toFixed(2)}</td>
+                  <td className="py-3 px-5 text-right text-gray-700">S/ {Number(d.precio_base_unitario).toFixed(2)}</td>
+                  <td className="py-3 px-5 text-right text-gray-700">S/ {Number(d.precio_final_unitario).toFixed(2)}</td>
+                  <td className="py-3 px-5 text-right">
+                    <span className={Number(d.sobreprecio_unitario) > 0 ? 'text-emerald-600 font-medium' : 'text-gray-700'}>
                       S/ {Number(d.sobreprecio_unitario).toFixed(2)}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right font-medium">S/ {Number(d.subtotal).toFixed(2)}</td>
+                  <td className="py-3 px-5 text-right font-medium text-gray-900">S/ {Number(d.subtotal).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr className="bg-gray-50 font-bold">
-                <td colSpan={6} className="text-right py-3 px-4">Total:</td>
-                <td className="text-right py-3 px-4 text-indigo-600">S/ {Number(venta.total).toFixed(2)}</td>
+              <tr className="bg-gray-50 font-medium">
+                <td colSpan={6} className="text-right py-3 px-5 text-sm text-gray-700">Total:</td>
+                <td className="text-right py-3 px-5 font-bold text-gray-900">S/ {Number(venta.total).toFixed(2)}</td>
               </tr>
             </tfoot>
           </table>
