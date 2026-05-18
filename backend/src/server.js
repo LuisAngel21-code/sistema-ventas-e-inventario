@@ -15,6 +15,24 @@ const reportesRoutes = require('./routes/reportes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const AUTH_USER = process.env.AUTH_USER || 'admin';
+const AUTH_PASS = process.env.AUTH_PASS || 'Cams2024';
+
+function authMiddleware(req, res, next) {
+  if (req.path === '/login') return next();
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Basic ')) {
+    return res.status(401).json({ error: 'Autenticación requerida' });
+  }
+  const base64 = auth.slice(6);
+  const decoded = Buffer.from(base64, 'base64').toString('utf-8');
+  const [user, pass] = decoded.split(':');
+  if (user !== AUTH_USER || pass !== AUTH_PASS) {
+    return res.status(401).json({ error: 'Credenciales inválidas' });
+  }
+  next();
+}
+
 async function start() {
   await initDB();
   initDatabase(db);
@@ -22,6 +40,17 @@ async function start() {
   app.use(cors({ origin: process.env.CORS_ORIGIN || '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
   app.use(express.json());
   app.use(morgan('dev'));
+
+  app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    if (username === AUTH_USER && password === AUTH_PASS) {
+      const token = Buffer.from(`${AUTH_USER}:${AUTH_PASS}`).toString('base64');
+      return res.json({ success: true, token, user: { username, role: 'admin' } });
+    }
+    res.status(401).json({ error: 'Credenciales inválidas' });
+  });
+
+  app.use('/api', authMiddleware);
 
   app.use('/api/vendedores', vendedoresRoutes);
   app.use('/api/productos', productosRoutes);

@@ -1,10 +1,19 @@
 const API_URL = '/api';
 
+function getAuthHeaders() {
+  try {
+    const auth = localStorage.getItem('muebleria_cams_auth');
+    if (auth) {
+      const { token } = JSON.parse(auth);
+      return { 'Authorization': `Basic ${token}` };
+    }
+  } catch {}
+  return {};
+}
+
 async function request(endpoint, options = {}) {
-  const config = {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  };
+  const headers = { 'Content-Type': 'application/json', ...getAuthHeaders(), ...options.headers };
+  const config = { ...options, headers };
 
   const response = await fetch(`${API_URL}${endpoint}`, config);
 
