@@ -12,7 +12,15 @@ export default function ReportesPage() {
 
   function descargar(url, filename) {
     setLoading(true);
-    fetch(url)
+    const headers = {};
+    try {
+      const auth = localStorage.getItem('muebleria_cams_auth');
+      if (auth) {
+        const { token } = JSON.parse(auth);
+        headers['Authorization'] = `Basic ${token}`;
+      }
+    } catch {}
+    fetch(url, { headers })
       .then(res => { if (!res.ok) throw new Error('Error al generar reporte'); return res.blob(); })
       .then(blob => {
         const a = document.createElement('a');
