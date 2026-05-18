@@ -27,15 +27,15 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
   const colWidths = [55, 75, 28, 55, 55, 55, 50, 55];
   const headers = ['Fecha', 'Producto', 'Cant', 'Costo', 'P.Base', 'P.Venta', 'Sobrep.', 'Subtotal'];
 
-  doc.font('Helvetica-Bold').fontSize(7).fillColor('#fff');
-  let xPos = margin;
   doc.rect(margin, tableTop, usableWidth, 18).fill('#2c3e50');
+  doc.fillColor('#fff');
+  doc.font('Helvetica-Bold').fontSize(7);
+  let xPos = margin;
   headers.forEach((h, i) => {
     doc.text(h, xPos + 2, tableTop + 5, { width: colWidths[i], align: 'center' });
     xPos += colWidths[i];
   });
 
-  doc.fillColor('#000');
   let yPos = tableTop + 22;
 
   ventas.forEach((v, idx) => {
@@ -48,6 +48,7 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
       doc.rect(margin, yPos - 4, usableWidth, 18).fill('#f1f3f5');
     }
 
+    doc.fillColor('#000');
     doc.font('Helvetica').fontSize(7);
     xPos = margin;
     const row = [
@@ -134,15 +135,15 @@ function generarReporteGeneral(doc, ventas, resumenGlobal, vendedoresData) {
   const colWidths = [25, 60, 60, 55, 50, 50];
   const headers = ['#', 'Fecha', 'Vendedor', 'Producto', 'Subtotal', 'Sobrepr.'];
 
-  doc.font('Helvetica-Bold').fontSize(8).fillColor('#fff');
-  let xPos = margin;
   doc.rect(margin, tableTop, usableWidth, 18).fill('#2c3e50');
+  doc.fillColor('#fff');
+  doc.font('Helvetica-Bold').fontSize(8);
+  let xPos = margin;
   headers.forEach((h, i) => {
     doc.text(h, xPos + 3, tableTop + 4, { width: colWidths[i], align: 'center' });
     xPos += colWidths[i];
   });
 
-  doc.fillColor('#000');
   let yPos = tableTop + 22;
 
   ventas.forEach((v, idx) => {
@@ -155,6 +156,7 @@ function generarReporteGeneral(doc, ventas, resumenGlobal, vendedoresData) {
       doc.rect(margin, yPos - 4, usableWidth, 18).fill('#f1f3f5');
     }
 
+    doc.fillColor('#000');
     doc.font('Helvetica').fontSize(8);
     xPos = margin;
     const row = [
@@ -182,8 +184,8 @@ function generarReporteGeneral(doc, ventas, resumenGlobal, vendedoresData) {
 
     let ry = resumenTop + 35;
     doc.font('Helvetica').fontSize(9);
-    doc.fillColor('#fff');
     doc.rect(margin + 5, ry - 4, usableWidth - 10, 16).fill('#34495e');
+    doc.fillColor('#fff');
     doc.text('Vendedor', margin + 10, ry);
     doc.text('Ventas', margin + 130, ry, { width: 60, align: 'center' });
     doc.text('Total', margin + 180, ry, { width: 70, align: 'center' });
@@ -194,6 +196,7 @@ function generarReporteGeneral(doc, ventas, resumenGlobal, vendedoresData) {
     doc.fillColor('#333');
     vendedoresData.forEach((vd, idx) => {
       if (idx % 2 === 0) doc.rect(margin + 5, ry - 4, usableWidth - 10, 16).fill('#f1f3f5');
+      doc.fillColor('#333');
       doc.text(vd.nombre, margin + 10, ry);
       doc.text(String(vd.total_ventas), margin + 130, ry, { width: 60, align: 'center' });
       doc.text(`S/ ${vd.total_monto.toFixed(2)}`, margin + 180, ry, { width: 70, align: 'center' });
@@ -224,15 +227,15 @@ function generarReporteInventario(doc, productos, movimientos) {
   const colWidths = [25, 50, 80, 50, 50, 50];
   const headers = ['#', 'Código', 'Producto', 'Costo', 'Stock', 'Estado'];
 
-  doc.font('Helvetica-Bold').fontSize(8).fillColor('#fff');
-  let xPos = margin;
   doc.rect(margin, tableTop, usableWidth, 18).fill('#2c3e50');
+  doc.fillColor('#fff');
+  doc.font('Helvetica-Bold').fontSize(8);
+  let xPos = margin;
   headers.forEach((h, i) => {
     doc.text(h, xPos + 3, tableTop + 4, { width: colWidths[i], align: 'center' });
     xPos += colWidths[i];
   });
 
-  doc.fillColor('#000');
   let yPos = tableTop + 22;
 
   productos.forEach((p, idx) => {
@@ -245,6 +248,7 @@ function generarReporteInventario(doc, productos, movimientos) {
       doc.rect(margin, yPos - 4, usableWidth, 18).fill('#f1f3f5');
     }
 
+    doc.fillColor('#000');
     const isLowStock = p.stock <= p.stock_minimo;
     if (isLowStock) doc.fillColor('#e74c3c');
 
@@ -263,7 +267,6 @@ function generarReporteInventario(doc, productos, movimientos) {
       doc.text(val, xPos + 3, yPos, { width: colWidths[i], align: 'center' });
       xPos += colWidths[i];
     });
-    doc.fillColor('#000');
     yPos += 18;
   });
 
