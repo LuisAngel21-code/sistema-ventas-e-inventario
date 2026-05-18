@@ -26,8 +26,8 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
   doc.moveDown(3);
 
   const tableTop = doc.y;
-  const colWidths = [25, 50, 55, 45, 50, 50, 45];
-  const headers = ['#', 'Fecha', 'Producto', 'Costo', 'P. Base', 'P. Final', 'Sobrepr.'];
+  const colWidths = [70, 75, 55, 55, 55];
+  const headers = ['Fecha', 'Producto', 'Precio Ingreso', 'Precio Venta', 'Sobreprecio'];
 
   doc.font('Helvetica-Bold').fontSize(8).fillColor('#fff');
   let xPos = margin;
@@ -53,11 +53,9 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
     doc.font('Helvetica').fontSize(8);
     xPos = margin;
     const row = [
-      String(idx + 1),
       new Date(v.fecha).toLocaleDateString('es-PE'),
-      (v.producto_nombre || '').substring(0, 12),
+      (v.producto_nombre || '').substring(0, 14),
       `S/ ${Number(v.costo_unitario).toFixed(2)}`,
-      `S/ ${Number(v.precio_base_unitario).toFixed(2)}`,
       `S/ ${Number(v.precio_final_unitario).toFixed(2)}`,
       `S/ ${Number(v.sobreprecio_unitario).toFixed(2)}`
     ];
