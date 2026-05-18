@@ -26,14 +26,14 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
   doc.moveDown(3);
 
   const tableTop = doc.y;
-  const colWidths = [70, 75, 55, 55, 55];
-  const headers = ['Fecha', 'Producto', 'Precio Ingreso', 'Precio Venta', 'Sobreprecio'];
+  const colWidths = [55, 75, 28, 55, 55, 55, 50, 55];
+  const headers = ['Fecha', 'Producto', 'Cant', 'Costo', 'P.Base', 'P.Venta', 'Sobrep.', 'Subtotal'];
 
-  doc.font('Helvetica-Bold').fontSize(8).fillColor('#fff');
+  doc.font('Helvetica-Bold').fontSize(7).fillColor('#fff');
   let xPos = margin;
   doc.rect(margin, tableTop, usableWidth, 18).fill('#2c3e50');
   headers.forEach((h, i) => {
-    doc.text(h, xPos + 3, tableTop + 4, { width: colWidths[i], align: 'center' });
+    doc.text(h, xPos + 2, tableTop + 5, { width: colWidths[i], align: 'center' });
     xPos += colWidths[i];
   });
 
@@ -50,18 +50,21 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
       doc.rect(margin, yPos - 4, usableWidth, 18).fill('#f1f3f5');
     }
 
-    doc.font('Helvetica').fontSize(8);
+    doc.font('Helvetica').fontSize(7);
     xPos = margin;
     const row = [
       new Date(v.fecha).toLocaleDateString('es-PE'),
       (v.producto_nombre || '').substring(0, 14),
+      String(v.cantidad || 1),
       `S/ ${Number(v.costo_unitario).toFixed(2)}`,
+      `S/ ${Number(v.precio_base_unitario).toFixed(2)}`,
       `S/ ${Number(v.precio_final_unitario).toFixed(2)}`,
-      `S/ ${Number(v.sobreprecio_unitario).toFixed(2)}`
+      `S/ ${Number(v.sobreprecio_unitario).toFixed(2)}`,
+      `S/ ${Number(v.subtotal).toFixed(2)}`
     ];
 
     row.forEach((val, i) => {
-      doc.text(val, xPos + 3, yPos, { width: colWidths[i], align: 'center' });
+      doc.text(val, xPos + 2, yPos, { width: colWidths[i], align: 'center' });
       xPos += colWidths[i];
     });
     yPos += 18;
