@@ -19,7 +19,7 @@ const AUTH_USER = process.env.AUTH_USER || 'admin';
 const AUTH_PASS = process.env.AUTH_PASS || 'Cams2024';
 
 function authMiddleware(req, res, next) {
-  if (req.path === '/login') return next();
+  if (req.path === '/login' || req.path === '/health') return next();
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Basic ')) {
     return res.status(401).json({ error: 'Autenticación requerida' });
