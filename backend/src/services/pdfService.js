@@ -9,21 +9,19 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
   doc.font('Helvetica-Bold').fontSize(20).text('Mueblería Cams', { align: 'center' });
   doc.fontSize(12).font('Helvetica').text('Reporte de Ventas por Vendedor', { align: 'center' });
   doc.moveDown(0.5);
-
   doc.fontSize(10).fillColor('#666')
     .text(`Generado el: ${new Date().toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' })}`, { align: 'center' });
   doc.moveDown(1);
 
-  doc.rect(margin, doc.y, usableWidth, 80).fillAndStroke('#f8f9fa', '#dee2e6');
+  const cardTop = doc.y;
+  doc.rect(margin, cardTop, usableWidth, 80).fillAndStroke('#f8f9fa', '#dee2e6');
   doc.fillColor('#333').fontSize(11);
-
-  doc.text(`Vendedor: ${vendedor.nombre} ${vendedor.apellido}`, margin + 10, doc.y + 10);
-  doc.text(`Email: ${vendedor.email || '---'}`, margin + 10, doc.y + 25);
-  doc.text(`Teléfono: ${vendedor.telefono || '---'}`, margin + 10, doc.y + 40);
-  doc.text(`Sueldo Fijo: S/ ${vendedor.sueldo_fijo.toFixed(2)}`, margin + 10, doc.y + 55);
-
+  doc.text(`Vendedor: ${vendedor.nombre} ${vendedor.apellido}`, margin + 10, cardTop + 10);
+  doc.text(`Email: ${vendedor.email || '---'}`, margin + 10, cardTop + 25);
+  doc.text(`Teléfono: ${vendedor.telefono || '---'}`, margin + 10, cardTop + 40);
+  doc.text(`Sueldo Fijo: S/ ${vendedor.sueldo_fijo.toFixed(2)}`, margin + 10, cardTop + 55);
   doc.fillColor('#000');
-  doc.moveDown(3);
+  doc.y = cardTop + 90;
 
   const tableTop = doc.y;
   const colWidths = [55, 75, 28, 55, 55, 55, 50, 55];
@@ -41,7 +39,7 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
   let yPos = tableTop + 22;
 
   ventas.forEach((v, idx) => {
-    if (yPos > doc.page.height - 80) {
+    if (yPos > doc.page.height - 100) {
       doc.addPage();
       yPos = 50;
     }
@@ -70,7 +68,6 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
     yPos += 18;
   });
 
-  doc.moveDown(2);
   const summaryTop = yPos + 10;
 
   doc.rect(margin, summaryTop, usableWidth, 130).fillAndStroke('#f8f9fa', '#2c3e50');
@@ -124,14 +121,14 @@ function generarReporteGeneral(doc, ventas, resumenGlobal, vendedoresData) {
     .text(`Generado el: ${new Date().toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' })}`, { align: 'center' });
   doc.moveDown(1);
 
-  doc.rect(margin, doc.y, usableWidth, 60).fillAndStroke('#f8f9fa', '#dee2e6');
+  const cardTop = doc.y;
+  doc.rect(margin, cardTop, usableWidth, 60).fillAndStroke('#f8f9fa', '#dee2e6');
   doc.fillColor('#333').fontSize(11);
-  doc.text(`Total de Ventas: ${ventas.length}`, margin + 10, doc.y + 10);
-  doc.text(`Total Ingresos: S/ ${resumenGlobal.totalVentas.toFixed(2)}`, margin + 10, doc.y + 25);
-  doc.text(`Total Comisiones: S/ ${resumenGlobal.totalComision.toFixed(2)}`, margin + 10, doc.y + 40);
-
+  doc.text(`Total de Ventas: ${ventas.length}`, margin + 10, cardTop + 10);
+  doc.text(`Total Ingresos: S/ ${resumenGlobal.totalVentas.toFixed(2)}`, margin + 10, cardTop + 25);
+  doc.text(`Total Comisiones: S/ ${resumenGlobal.totalComision.toFixed(2)}`, margin + 10, cardTop + 40);
   doc.fillColor('#000');
-  doc.moveDown(3);
+  doc.y = cardTop + 75;
 
   const tableTop = doc.y;
   const colWidths = [25, 60, 60, 55, 50, 50];
@@ -176,11 +173,10 @@ function generarReporteGeneral(doc, ventas, resumenGlobal, vendedoresData) {
     yPos += 18;
   });
 
-  doc.moveDown(2);
-
   if (vendedoresData && vendedoresData.length > 0) {
     const resumenTop = yPos + 10;
-    doc.rect(margin, resumenTop, usableWidth, 150).fillAndStroke('#f8f9fa', '#2c3e50');
+    const summaryBoxHeight = Math.max(150, 48 + vendedoresData.length * 16 + 10);
+    doc.rect(margin, resumenTop, usableWidth, summaryBoxHeight).fillAndStroke('#f8f9fa', '#2c3e50');
     doc.fillColor('#2c3e50').font('Helvetica-Bold').fontSize(12)
       .text('RESUMEN POR VENDEDOR', margin + 10, resumenTop + 10);
 
