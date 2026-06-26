@@ -6,11 +6,17 @@ function authenticate(req, res, next) {
   if (req.path === '/login' || req.path === '/health') return next();
 
   const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de autenticación requerido' });
+  let token = null;
+
+  if (auth && auth.startsWith('Bearer ')) {
+    token = auth.slice(7);
+  } else if (req.query.token) {
+    token = req.query.token;
   }
 
-  const token = auth.slice(7);
+  if (!token) {
+    return res.status(401).json({ error: 'Token de autenticación requerido' });
+  }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);

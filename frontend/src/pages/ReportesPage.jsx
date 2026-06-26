@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { reportesAPI, vendedoresAPI } from '../services/api';
-import { FileText, Download, Calendar, User, Loader2 } from 'lucide-react';
+import { vendedoresAPI, reportesAPI } from '../services/api';
+import { FileText, Download, Calendar, User } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Select from '../components/ui/Select';
 import Button from '../components/ui/Button';
@@ -8,7 +8,6 @@ import Button from '../components/ui/Button';
 export default function ReportesPage() {
   const [vendedores, setVendedores] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [downloads, setDownloads] = useState({});
   const [filtros, setFiltros] = useState({ vendedor_id: '', desde: '', hasta: '' });
 
   useEffect(() => {
@@ -17,33 +16,16 @@ export default function ReportesPage() {
       .catch(console.error);
   }, []);
 
-  async function descargar(tipo, params = {}) {
-    const key = `${tipo}-${JSON.stringify(params)}`;
-    setDownloads({ ...downloads, [key]: true });
-
-    try {
-      let blob;
-      if (tipo === 'vendedor') {
-        blob = await reportesAPI.vendedor(params.id, params.desde || '', params.hasta || '');
-      } else if (tipo === 'general') {
-        blob = await reportesAPI.general(params.desde || '', params.hasta || '');
-      } else {
-        blob = await reportesAPI.inventario();
-      }
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${tipo}_${Date.now()}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      alert('Error al generar reporte: ' + err.message);
-    } finally {
-      setDownloads({ ...downloads, [key]: false });
+  function descargar(tipo, params = {}) {
+    let url;
+    if (tipo === 'vendedor') {
+      url = reportesAPI.vendedor(params.id, params.desde || '', params.hasta || '');
+    } else if (tipo === 'general') {
+      url = reportesAPI.general(params.desde || '', params.hasta || '');
+    } else {
+      url = reportesAPI.inventario();
     }
+    window.open(url, '_blank');
   }
 
   const reportes = [
@@ -116,8 +98,6 @@ export default function ReportesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {reportes.map((r) => {
           const Icon = r.icon;
-          const key = `${r.tipo}-${JSON.stringify(r.params)}`;
-          const isDownloading = downloads[key];
 
           return (
             <div key={r.tipo} className="stat-card p-5 flex flex-col">
@@ -138,11 +118,10 @@ export default function ReportesPage() {
               <Button
                 className="mt-4 w-full"
                 onClick={() => descargar(r.tipo, r.params)}
-                loading={isDownloading}
                 disabled={r.tipo === 'vendedor' && !filtros.vendedor_id}
                 icon={Download}
               >
-                {isDownloading ? 'Generando...' : 'Descargar PDF'}
+                Descargar PDF
               </Button>
             </div>
           );

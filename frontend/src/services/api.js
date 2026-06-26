@@ -38,12 +38,6 @@ async function request(endpoint, options = {}) {
       throw new Error(data.error || 'No autorizado');
     }
 
-    const contentType = res.headers.get('content-type');
-    if (contentType && contentType.includes('application/pdf')) {
-      const blob = await res.blob();
-      return blob;
-    }
-
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error del servidor');
     return data;
@@ -97,16 +91,22 @@ export const inventarioAPI = {
   entradaStock: (data) => request('/api/inventario/entrada', { method: 'POST', body: data }),
 };
 
+export function getDownloadUrl(path) {
+  const token = getToken();
+  const sep = path.includes('?') ? '&' : '?';
+  return `${path}${sep}token=${encodeURIComponent(token || '')}`;
+}
+
 export const reportesAPI = {
   vendedor: (id, desde, hasta) => {
     const qs = new URLSearchParams({ desde, hasta }).toString();
-    return request(`/api/reportes/vendedor/${id}?${qs}`);
+    return getDownloadUrl(`/api/reportes/vendedor/${id}?${qs}`);
   },
   general: (desde, hasta) => {
     const qs = new URLSearchParams({ desde, hasta }).toString();
-    return request(`/api/reportes/general?${qs}`);
+    return getDownloadUrl(`/api/reportes/general?${qs}`);
   },
-  inventario: () => request('/api/reportes/inventario'),
+  inventario: () => getDownloadUrl('/api/reportes/inventario'),
 };
 
 export const categoriasAPI = {
