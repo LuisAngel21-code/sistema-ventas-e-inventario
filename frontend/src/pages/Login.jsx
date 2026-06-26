@@ -17,7 +17,7 @@ export default function Login() {
 
     try {
       const success = await login(username, password);
-      if (!success) setError('Usuario o contraseña incorrectos');
+      if (!success) setError('Credenciales incorrectas');
     } catch {
       setError('Error de conexión con el servidor');
     } finally {
@@ -47,13 +47,13 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="px-8 pb-10 space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider font-body">Usuario</label>
+              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider font-body">Correo electrónico</label>
               <input
-                type="text"
+                type="email"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-wood-500/40 focus:border-wood-500/50 transition-all font-body"
-                placeholder="Ingrese su usuario"
+                placeholder="admin@cams.com"
                 autoFocus
                 required
               />

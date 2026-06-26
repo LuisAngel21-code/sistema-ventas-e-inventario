@@ -22,38 +22,21 @@ async function seed() {
     ('Propia'), ('Forbis'), ('Rosen'), ('Dormitorio'), ('Belcor');
   `);
 
-  const vendedores = [
-    ['Admin', 'Sistema', 'admin@tienda.com', '999999999', 350],
-    ['María', 'García', 'maria@tienda.com', '987654321', 350],
-    ['Carlos', 'López', 'carlos@tienda.com', '987654322', 350],
-    ['Ana', 'Martínez', 'ana@tienda.com', '987654323', 350],
-  ];
+  await query(`INSERT INTO vendedores (nombre, apellido, email, telefono, sueldo_fijo) VALUES
+    ('Admin', 'Sistema', 'admin@cams.com', '999999999', 350),
+    ('Jorge', 'Admin', 'jorge@gmail.com', '987654321', 350);
+  `);
 
-  for (const v of vendedores) {
-    await query(
-      'INSERT INTO vendedores (nombre, apellido, email, telefono, sueldo_fijo) VALUES ($1, $2, $3, $4, $5)',
-      v
-    );
-  }
-
-  const adminHash = await bcrypt.hash('admin123', 10);
-  const userHash = await bcrypt.hash('vendedor123', 10);
+  const hashAdmin = await bcrypt.hash('cams2026', 10);
+  const hashJorge = await bcrypt.hash('jorge2026', 10);
 
   await query(
-    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (1, 'admin', $1, 'admin')",
-    [adminHash]
+    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (1, 'admin@cams.com', $1, 'admin')",
+    [hashAdmin]
   );
   await query(
-    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (2, 'maria', $1, 'vendedor')",
-    [userHash]
-  );
-  await query(
-    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (3, 'carlos', $1, 'vendedor')",
-    [userHash]
-  );
-  await query(
-    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (4, 'ana', $1, 'vendedor')",
-    [userHash]
+    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (2, 'jorge@gmail.com', $1, 'admin')",
+    [hashJorge]
   );
 
   await query(`INSERT INTO productos (codigo, nombre, descripcion, costo, precio_base, stock, stock_minimo, categoria) VALUES
@@ -70,6 +53,9 @@ async function seed() {
   `);
 
   console.log('Datos iniciales insertados correctamente');
+  console.log('Usuarios creados:');
+  console.log('  admin@cams.com / cams2026');
+  console.log('  jorge@gmail.com / jorge2026');
 }
 
 seed().catch(err => {
