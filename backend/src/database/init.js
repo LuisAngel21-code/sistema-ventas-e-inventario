@@ -138,6 +138,18 @@ async function initDatabase() {
     END $$;
   `);
 
+  await query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='ventas' AND column_name='tipo_comprobante') THEN
+        ALTER TABLE ventas ADD COLUMN tipo_comprobante VARCHAR(20) NOT NULL DEFAULT 'boleta';
+        ALTER TABLE ventas ADD COLUMN metodo_pago VARCHAR(30) NOT NULL DEFAULT 'efectivo';
+        ALTER TABLE ventas ADD COLUMN nro_comprobante VARCHAR(50) NOT NULL DEFAULT '';
+        ALTER TABLE ventas ADD COLUMN voucher_url TEXT;
+        ALTER TABLE ventas ADD COLUMN comprobante_url TEXT;
+      END IF;
+    END $$;
+  `);
+
   console.log('Base de datos inicializada correctamente');
 }
 

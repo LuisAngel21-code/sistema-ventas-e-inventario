@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ventasAPI } from '../services/api';
-import { ArrowLeft, Receipt, User, Calendar, Hash } from 'lucide-react';
+import { ArrowLeft, Receipt, User, Calendar, Hash, CreditCard, FileText, Image } from 'lucide-react';
 import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 
 export default function VentaDetalle() {
   const { id } = useParams();
   const [venta, setVenta] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [imageModal, setImageModal] = useState(null);
 
   useEffect(() => {
     ventasAPI.getById(id)
@@ -40,7 +42,7 @@ export default function VentaDetalle() {
 
       {/* Summary card */}
       <div className="card-page p-5">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
               <User className="w-5 h-5 text-blue-600" />
@@ -66,6 +68,50 @@ export default function VentaDetalle() {
             <div>
               <p className="text-xs text-gray-500">Total</p>
               <p className="text-lg font-display font-bold text-primary-700">S/ {Number(venta.total).toFixed(2)}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-violet-50 rounded-lg flex items-center justify-center">
+              <CreditCard className="w-5 h-5 text-violet-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Pago</p>
+              <p className="text-sm font-semibold text-gray-900 capitalize">
+                {venta.metodo_pago?.replace(/_/g, ' ') || 'Efectivo'}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-cyan-50 rounded-lg flex items-center justify-center">
+              <FileText className="w-5 h-5 text-cyan-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 capitalize">{venta.tipo_comprobante || 'Boleta'}</p>
+              <p className="text-sm font-semibold text-gray-900">{venta.nro_comprobante || '—'}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center">
+              <Image className="w-5 h-5 text-rose-600" />
+            </div>
+            <div className="flex gap-3">
+              {venta.comprobante_url && (
+                <button onClick={() => setImageModal(venta.comprobante_url)}
+                  className="text-xs text-primary-600 hover:text-primary-700 underline">
+                  Ver comprobante
+                </button>
+              )}
+              {venta.voucher_url && (
+                <button onClick={() => setImageModal(venta.voucher_url)}
+                  className="text-xs text-primary-600 hover:text-primary-700 underline">
+                  Ver voucher
+                </button>
+              )}
+              {!venta.comprobante_url && !venta.voucher_url && (
+                <p className="text-sm text-gray-400">Sin imágenes</p>
+              )}
             </div>
           </div>
         </div>
@@ -125,6 +171,11 @@ export default function VentaDetalle() {
           </table>
         </div>
       </div>
+      <Modal open={!!imageModal} onClose={() => setImageModal(null)} title="Imagen" size="lg">
+        {imageModal && (
+          <img src={imageModal} alt="Comprobante" className="w-full h-auto rounded-lg" />
+        )}
+      </Modal>
     </div>
   );
 }

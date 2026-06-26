@@ -81,6 +81,18 @@ export const ventasAPI = {
   },
   getById: (id) => request(`/api/ventas/${id}`),
   create: (data) => request('/api/ventas', { method: 'POST', body: data }),
+  createWithFiles: (formData) => {
+    const token = getToken();
+    return fetch('/api/ventas', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    }).then(async res => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error del servidor');
+      return data;
+    });
+  },
   anular: (id) => request(`/api/ventas/${id}/anular`, { method: 'PUT' }),
 };
 

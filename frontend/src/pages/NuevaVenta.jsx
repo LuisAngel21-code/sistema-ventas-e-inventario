@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ventasAPI, vendedoresAPI, productosAPI } from '../services/api';
-import { Plus, Trash2, Save, ArrowLeft, DollarSign } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, DollarSign, Upload } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Select from '../components/ui/Select';
 import Input from '../components/ui/Input';
@@ -14,8 +14,14 @@ export default function NuevaVenta() {
   const [vendedorId, setVendedorId] = useState('');
   const [items, setItems] = useState([{ producto_id: '', cantidad: 1, precio_final: '' }]);
   const [loading, setLoading] = useState(false);
-  const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [tipoComprobante, setTipoComprobante] = useState('boleta');
+  const [metodoPago, setMetodoPago] = useState('efectivo');
+  const [nroComprobante, setNroComprobante] = useState('');
+  const [comprobanteFile, setComprobanteFile] = useState(null);
+  const [voucherFile, setVoucherFile] = useState(null);
+  const comprobanteRef = useRef();
+  const voucherRef = useRef();
 
   useEffect(() => {
     Promise.all([
@@ -62,20 +68,30 @@ export default function NuevaVenta() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!vendedorId) return alert('Seleccione un vendedor');
-    if (items.some(i => !i.producto_id)) return alert('Complete todos los productos');
+    if (!vendedorId) return showToast('Seleccione un vendedor', 'warning');
+    if (items.some(i => !i.producto_id)) return showToast('Complete todos los productos', 'warning');
+    if (!nroComprobante) return showToast('Nro. de comprobante requerido', 'warning');
+    if (!comprobanteFile) return showToast('Foto del comprobante requerida', 'warning');
+    if (metodoPago !== 'efectivo' && !voucherFile) {
+      return showToast('Foto del voucher requerida para este método de pago', 'warning');
+    }
 
     setSaving(true);
     try {
-      const payload = {
-        vendedor_id: Number(vendedorId),
-        productos: items.map(i => ({
-          producto_id: Number(i.producto_id),
-          cantidad: Number(i.cantidad),
-          precio_final: Number(i.precio_final),
-        })),
-      };
-      const result = await ventasAPI.create(payload);
+      const formData = new FormData();
+      formData.append('vendedor_id', Number(vendedorId));
+      formData.append('tipo_comprobante', tipoComprobante);
+      formData.append('metodo_pago', metodoPago);
+      formData.append('nro_comprobante', nroComprobante);
+      formData.append('comprobante', comprobanteFile);
+      if (voucherFile) formData.append('voucher', voucherFile);
+      formData.append('productos', JSON.stringify(items.map(i => ({
+        producto_id: Number(i.producto_id),
+        cantidad: Number(i.cantidad),
+        precio_final: Number(i.precio_final),
+      }))));
+
+      const result = await ventasAPI.createWithFiles(formData);
       showToast('Venta registrada exitosamente', 'success');
       navigate(`/ventas/${result.id}`);
     } catch (err) {
@@ -103,6 +119,74 @@ export default function NuevaVenta() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="card-page p-5 space-y-4">
+          <h3 className="text-sm font-display font-semibold text-gray-900">Información de pago</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Select
+              label="Tipo comprobante *"
+              value={tipoComprobante}
+              onChange={(e) => setTipoComprobante(e.target.value)}
+              options={[
+                { value: 'boleta', label: 'Boleta' },
+                { value: 'factura', label: 'Factura' },
+              ]}
+            />
+            <Select
+              label="Método de pago *"
+              value={metodoPago}
+              onChange={(e) => setMetodoPago(e.target.value)}
+              options={[
+                { value: 'efectivo', label: 'Efectivo' },
+                { value: 'transferencia_bcp', label: 'Transferencia BCP' },
+                { value: 'transferencia_interbank', label: 'Transferencia Interbank' },
+                { value: 'yape', label: 'Yape' },
+                { value: 'plin', label: 'Plin' },
+                { value: 'tarjeta', label: 'Tarjeta' },
+                { value: 'pos_quiqui', label: 'Pos Qui Qui' },
+              ]}
+            />
+          </div>
+          <Input
+            label="Nro. de comprobante *"
+            value={nroComprobante}
+            onChange={(e) => setNroComprobante(e.target.value)}
+            placeholder="Ej: B001-00012345"
+            required
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="input-label">Foto del comprobante *</label>
+              <div
+                onClick={() => comprobanteRef.current?.click()}
+                className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-primary-400 transition-colors"
+              >
+                <input ref={comprobanteRef} type="file" accept="image/*" className="hidden"
+                  onChange={(e) => setComprobanteFile(e.target.files[0])} />
+                <Upload className="w-6 h-6 mx-auto text-gray-400 mb-1" />
+                <p className="text-xs text-gray-500">
+                  {comprobanteFile ? comprobanteFile.name : 'Click para subir foto'}
+                </p>
+              </div>
+            </div>
+            {metodoPago !== 'efectivo' && (
+              <div className="space-y-1.5">
+                <label className="input-label">Foto del voucher *</label>
+                <div
+                  onClick={() => voucherRef.current?.click()}
+                  className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-primary-400 transition-colors"
+                >
+                  <input ref={voucherRef} type="file" accept="image/*" className="hidden"
+                    onChange={(e) => setVoucherFile(e.target.files[0])} />
+                  <Upload className="w-6 h-6 mx-auto text-gray-400 mb-1" />
+                  <p className="text-xs text-gray-500">
+                    {voucherFile ? voucherFile.name : 'Click para subir foto'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="card-page p-5">
           <Select
             label="Vendedor"
