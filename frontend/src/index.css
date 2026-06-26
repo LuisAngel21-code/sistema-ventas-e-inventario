@@ -2,14 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+@layer base {
+  * { @apply border-gray-200; }
+  body {
+    @apply bg-gray-50 text-gray-900 font-body antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .stat-card {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  .stat-card .icon-wrapper {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center;
+  }
+  .table-header {
+    @apply text-left py-3 px-5 font-body font-medium text-gray-500 text-xs uppercase tracking-wider;
+  }
+  .table-cell {
+    @apply py-3 px-5 text-sm;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-success { @apply badge bg-emerald-50 text-emerald-700; }
+  .badge-warning { @apply badge bg-amber-50 text-amber-700; }
+  .badge-danger { @apply badge bg-red-50 text-red-700; }
+  .badge-info { @apply badge bg-blue-50 text-blue-700; }
+  .badge-neutral { @apply badge bg-gray-100 text-gray-600; }
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  }
+  .modal-card {
+    @apply bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-primary-700 text-white hover:bg-primary-800 focus:ring-primary-500 active:scale-[0.98];
+  }
+  .btn-secondary {
+    @apply btn bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 focus:ring-gray-500;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+  .btn-ghost {
+    @apply btn text-gray-500 hover:text-gray-700 hover:bg-gray-100;
+  }
+  .input-field {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all;
+  }
+  .input-label {
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
+  }
+  .card-page {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm;
+  }
+  .page-title {
+    @apply text-2xl font-display font-bold text-primary-900;
+  }
+  .page-subtitle {
+    @apply text-sm text-gray-500 mt-1;
+  }
 }
 
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-slideDown {
-  animation: slideDown 0.2s ease-out;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-slideDown { animation: slideDown 0.2s ease-out; }
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+.animate-scaleIn { animation: scaleIn 0.2s ease-out; }

@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ventasAPI, vendedoresAPI, productosAPI } from '../services/api';
+import { Plus, Trash2, Save, ArrowLeft, DollarSign } from 'lucide-react';
+import Button from '../components/ui/Button';
+import Select from '../components/ui/Select';
+import Input from '../components/ui/Input';
 
 export default function NuevaVenta() {
   const navigate = useNavigate();
@@ -8,151 +12,180 @@ export default function NuevaVenta() {
   const [productos, setProductos] = useState([]);
   const [vendedorId, setVendedorId] = useState('');
   const [items, setItems] = useState([{ producto_id: '', cantidad: 1, precio_final: '' }]);
-  const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [vData, pData] = await Promise.all([vendedoresAPI.getAll(), productosAPI.getAll(true)]);
-        setVendedores(vData.filter(v => v.activo));
-        setProductos(pData);
-      } catch (err) { console.error(err); }
-    }
-    load();
+    Promise.all([
+      vendedoresAPI.getAll(),
+      productosAPI.getAll(true),
+    ]).then(([vends, prods]) => {
+      setVendedores(vends);
+      setProductos(prods);
+      setLoading(false);
+    }).catch(console.error);
   }, []);
 
   function handleProductChange(index, productoId) {
-    const producto = productos.find(p => p.id === Number(productoId));
+    const prod = productos.find(p => p.id === Number(productoId));
     const newItems = [...items];
-    newItems[index] = { ...newItems[index], producto_id: productoId, precio_final: producto ? producto.precio_base : '' };
+    newItems[index] = {
+      ...newItems[index],
+      producto_id: productoId,
+      precio_final: prod ? prod.precio_base : '',
+    };
     setItems(newItems);
   }
 
-  function handleItemChange(index, field, value) {
+  function addItem() {
+    setItems([...items, { producto_id: '', cantidad: 1, precio_final: '' }]);
+  }
+
+  function removeItem(index) {
+    if (items.length === 1) return;
+    setItems(items.filter((_, i) => i !== index));
+  }
+
+  function updateItem(index, field, value) {
     const newItems = [...items];
     newItems[index][field] = value;
     setItems(newItems);
   }
 
-  function addItem() { setItems([...items, { producto_id: '', cantidad: 1, precio_final: '' }]); }
-  function removeItem(index) { if (items.length > 1) setItems(items.filter((_, i) => i !== index)); }
-
-  function getProducto(id) { return productos.find(p => p.id === Number(id)); }
-
   function getTotal() {
-    return items.reduce((sum, item) => {
-      const p = getProducto(item.producto_id);
-      if (!p) return sum;
-      return sum + (Number(item.precio_final || p.precio_base) * (item.cantidad || 1));
+    return items.reduce((acc, item) => {
+      return acc + (Number(item.precio_final) || 0) * (Number(item.cantidad) || 0);
     }, 0);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError('');
-    if (!vendedorId) { setError('Seleccione un vendedor'); return; }
-    if (items.some(i => !i.producto_id)) { setError('Complete todos los productos'); return; }
-    setSubmitting(true);
+    if (!vendedorId) return alert('Seleccione un vendedor');
+    if (items.some(i => !i.producto_id)) return alert('Complete todos los productos');
+
+    setSaving(true);
     try {
-      const data = {
+      const payload = {
         vendedor_id: Number(vendedorId),
         productos: items.map(i => ({
           producto_id: Number(i.producto_id),
-          cantidad: Number(i.cantidad) || 1,
-          precio_final: Number(i.precio_final) || getProducto(i.producto_id)?.precio_base || 0
-        }))
+          cantidad: Number(i.cantidad),
+          precio_final: Number(i.precio_final),
+        })),
       };
-      const result = await ventasAPI.create(data);
+      const result = await ventasAPI.create(payload);
       navigate(`/ventas/${result.id}`);
-    } catch (err) { setError(err.message); }
-    finally { setSubmitting(false); }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
+  const prodOptions = productos
+    .filter(p => p.activo !== false)
+    .map(p => ({
+      value: p.id,
+      label: `${p.codigo} — ${p.nombre} (S/ ${Number(p.precio_base).toFixed(2)})`,
+    }));
+
   return (
-    <div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-6">Nueva Venta</h3>
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" onClick={() => navigate('/ventas')} icon={ArrowLeft}>Volver</Button>
+        <div>
+          <h1 className="page-title">Nueva Venta</h1>
+          <p className="page-subtitle">Registrar una nueva venta</p>
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
-          <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Datos de la Venta</h4>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Vendedor *</label>
-            <select value={vendedorId} onChange={(e) => setVendedorId(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" required>
-              <option value="">Seleccione un vendedor</option>
-              {vendedores.map((v) => (<option key={v.id} value={v.id}>{v.nombre} {v.apellido}</option>))}
-            </select>
-          </div>
+        <div className="card-page p-5">
+          <Select
+            label="Vendedor"
+            placeholder="Seleccionar vendedor..."
+            value={vendedorId}
+            onChange={(e) => setVendedorId(e.target.value)}
+            options={vendedores.map(v => ({
+              value: v.id,
+              label: `${v.nombre} ${v.apellido}`,
+            }))}
+          />
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">Productos</h4>
-            <button type="button" onClick={addItem} className="text-sm text-blue-600 hover:text-blue-800 font-medium">+ Agregar producto</button>
+        <div className="card-page p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-display font-semibold text-gray-900">Productos</h3>
+            <Button type="button" variant="secondary" size="sm" onClick={addItem} icon={Plus}>
+              Agregar
+            </Button>
           </div>
-          {items.map((item, index) => {
-            const producto = getProducto(item.producto_id);
+
+          {items.map((item, i) => {
+            const prod = productos.find(p => p.id === Number(item.producto_id));
+            const sobreprecio = item.precio_final && prod
+              ? Number(item.precio_final) - Number(prod.precio_base)
+              : 0;
+
             return (
-              <div key={index} className={`border rounded-md p-4 ${index < items.length - 1 ? 'mb-3' : ''}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-medium text-gray-500 uppercase">Producto #{index + 1}</span>
-                  {items.length > 1 && (
-                    <button type="button" onClick={() => removeItem(index)} className="text-xs text-red-600 hover:text-red-800">Quitar</button>
+              <div key={i} className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <Select
+                    placeholder="Buscar producto..."
+                    value={item.producto_id}
+                    onChange={(e) => handleProductChange(i, e.target.value)}
+                    options={prodOptions}
+                  />
+                </div>
+                <div className="w-24">
+                  <Input
+                    type="number"
+                    min="1"
+                    value={item.cantidad}
+                    onChange={(e) => updateItem(i, 'cantidad', e.target.value)}
+                  />
+                </div>
+                <div className="w-36">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={item.precio_final}
+                    onChange={(e) => updateItem(i, 'precio_final', e.target.value)}
+                    icon={DollarSign}
+                  />
+                </div>
+                <div className="w-24 pt-1.5 text-right">
+                  {sobreprecio > 0 && (
+                    <span className="text-xs font-medium text-amber-600">
+                      +S/ {sobreprecio.toFixed(2)}
+                    </span>
                   )}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Producto</label>
-                    <select value={item.producto_id} onChange={(e) => handleProductChange(index, e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" required>
-                      <option value="">Seleccionar...</option>
-                      {productos.map((p) => (
-                        <option key={p.id} value={p.id}>{p.nombre} — S/ {p.precio_base.toFixed(2)} (Stock: {p.stock})</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Cantidad</label>
-                    <input type="number" min="1" max={producto?.stock || 99} value={item.cantidad}
-                      onChange={(e) => handleItemChange(index, 'cantidad', e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" required />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">
-                      Precio Final {producto && <span className="text-gray-400 font-normal">(Base: S/ {producto.precio_base.toFixed(2)})</span>}
-                    </label>
-                    <input type="number" step="0.01" min="0" value={item.precio_final}
-                      onChange={(e) => handleItemChange(index, 'precio_final', e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900"
-                      placeholder={producto ? String(producto.precio_base.toFixed(2)) : ''} />
-                  </div>
-                </div>
-                {producto && Number(item.precio_final) > producto.precio_base && (
-                  <p className="mt-2 text-xs text-emerald-600">
-                    Sobreprecio: S/ {(Number(item.precio_final) - producto.precio_base).toFixed(2)}
-                  </p>
-                )}
+                <button
+                  type="button"
+                  onClick={() => removeItem(i)}
+                  className="p-2 mt-1 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             );
           })}
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-700">Total de la Venta</span>
-            <span className="text-xl font-bold text-gray-900">S/ {getTotal().toFixed(2)}</span>
+        <div className="card-page p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-display font-semibold text-gray-900">Total</span>
+            <span className="text-2xl font-display font-bold text-primary-700">
+              S/ {getTotal().toFixed(2)}
+            </span>
           </div>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-md">{error}</div>
-        )}
-
-        <button type="submit" disabled={submitting}
-          className="w-full bg-slate-900 text-white py-3 rounded-md font-medium hover:bg-slate-800 disabled:bg-slate-400 transition-colors">
-          {submitting ? 'Registrando...' : 'Registrar Venta'}
-        </button>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => navigate('/ventas')}>Cancelar</Button>
+          <Button type="submit" loading={saving} icon={Save}>Registrar Venta</Button>
+        </div>
       </form>
     </div>
   );

@@ -3,4 +3,5 @@ node_modules/
 *.log
 .DS_Store
 backend/data/
-backend/.env
+backend/uploads/
+frontend/dist/

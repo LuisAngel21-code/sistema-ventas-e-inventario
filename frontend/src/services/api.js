@@ -1,74 +1,124 @@
-const API_URL = '/api';
+const TOKEN_KEY = 'muebleria_cams_auth';
 
-function getAuthHeaders() {
+function getToken() {
   try {
-    const auth = localStorage.getItem('muebleria_cams_auth');
-    if (auth) {
-      const { token } = JSON.parse(auth);
-      return { 'Authorization': `Basic ${token}` };
-    }
-  } catch {}
-  return {};
+    const stored = localStorage.getItem(TOKEN_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored).token;
+  } catch { return null; }
 }
 
 async function request(endpoint, options = {}) {
-  const headers = { 'Content-Type': 'application/json', ...getAuthHeaders(), ...options.headers };
-  const config = { ...options, headers };
+  const token = getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
 
-  const response = await fetch(`${API_URL}${endpoint}`, config);
+  const config = {
+    ...options,
+    headers,
+  };
 
-  if (endpoint.includes('/reportes/') && options.responseType === 'blob') {
-    return response;
+  if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
+    config.body = JSON.stringify(config.body);
   }
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Error en la solicitud');
-  return data;
+  try {
+    const res = await fetch(endpoint, config);
+
+    if (res.status === 401) {
+      const data = await res.json().catch(() => ({}));
+      if (data.code === 'TOKEN_EXPIRED') {
+        localStorage.removeItem(TOKEN_KEY);
+        window.location.href = '/login';
+        throw new Error('Sesión expirada');
+      }
+      throw new Error(data.error || 'No autorizado');
+    }
+
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/pdf')) {
+      const blob = await res.blob();
+      return blob;
+    }
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error del servidor');
+    return data;
+  } catch (err) {
+    if (err.message === 'Failed to fetch') {
+      throw new Error('Error de conexión con el servidor');
+    }
+    throw err;
+  }
 }
 
+export const authAPI = {
+  login: (username, password) =>
+    request('/api/auth/login', {
+      method: 'POST',
+      body: { username, password },
+    }),
+  me: () => request('/api/auth/me'),
+};
+
 export const vendedoresAPI = {
-  getAll: () => request('/vendedores'),
-  getById: (id) => request(`/vendedores/${id}`),
-  create: (data) => request('/vendedores', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id, data) => request(`/vendedores/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  remove: (id) => request(`/vendedores/${id}`, { method: 'DELETE' }),
+  getAll: () => request('/api/vendedores'),
+  getById: (id) => request(`/api/vendedores/${id}`),
+  create: (data) => request('/api/vendedores', { method: 'POST', body: data }),
+  update: (id, data) => request(`/api/vendedores/${id}`, { method: 'PUT', body: data }),
+  remove: (id) => request(`/api/vendedores/${id}`, { method: 'DELETE' }),
 };
 
 export const productosAPI = {
-  getAll: (activo) => request(`/productos${activo !== undefined ? `?activo=${activo}` : ''}`),
-  getById: (id) => request(`/productos/${id}`),
-  create: (data) => request('/productos', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id, data) => request(`/productos/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  remove: (id) => request(`/productos/${id}`, { method: 'DELETE' }),
+  getAll: (activo) => request(`/api/productos${activo ? '?activo=true' : ''}`),
+  getById: (id) => request(`/api/productos/${id}`),
+  create: (data) => request('/api/productos', { method: 'POST', body: data }),
+  update: (id, data) => request(`/api/productos/${id}`, { method: 'PUT', body: data }),
+  remove: (id) => request(`/api/productos/${id}`, { method: 'DELETE' }),
 };
 
 export const ventasAPI = {
-  getAll: (params) => {
-    const query = params ? '?' + new URLSearchParams(params).toString() : '';
-    return request(`/ventas${query}`);
+  getAll: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/api/ventas${qs ? '?' + qs : ''}`);
   },
-  getById: (id) => request(`/ventas/${id}`),
-  create: (data) => request('/ventas', { method: 'POST', body: JSON.stringify(data) }),
-  remove: (id) => request(`/ventas/${id}`, { method: 'DELETE' }),
+  getById: (id) => request(`/api/ventas/${id}`),
+  create: (data) => request('/api/ventas', { method: 'POST', body: data }),
+  remove: (id) => request(`/api/ventas/${id}`, { method: 'DELETE' }),
 };
 
 export const inventarioAPI = {
-  getMovimientos: (params) => {
-    const query = params ? '?' + new URLSearchParams(params).toString() : '';
-    return request(`/inventario/movimientos${query}`);
-  },
-  getStock: () => request('/inventario/stock'),
-  entradaStock: (data) => request('/inventario/entrada', { method: 'POST', body: JSON.stringify(data) }),
+  getStock: () => request('/api/inventario/stock'),
+  getMovimientos: (producto_id) =>
+    request(`/api/inventario/movimientos${producto_id ? '?producto_id=' + producto_id : ''}`),
+  entradaStock: (data) => request('/api/inventario/entrada', { method: 'POST', body: data }),
 };
 
 export const reportesAPI = {
-  reporteVendedor: (id, params) => {
-    const query = params ? '?' + new URLSearchParams(params).toString() : '';
-    return request(`/reportes/vendedor/${id}${query}`, { responseType: 'blob' });
+  vendedor: (id, desde, hasta) => {
+    const qs = new URLSearchParams({ desde, hasta }).toString();
+    return request(`/api/reportes/vendedor/${id}?${qs}`);
   },
-  reporteGeneral: (params) => {
-    const query = params ? '?' + new URLSearchParams(params).toString() : '';
-    return request(`/reportes/general${query}`, { responseType: 'blob' });
+  general: (desde, hasta) => {
+    const qs = new URLSearchParams({ desde, hasta }).toString();
+    return request(`/api/reportes/general?${qs}`);
   },
-  reporteInventario: () => request('/reportes/inventario', { responseType: 'blob' }),
+  inventario: () => request('/api/reportes/inventario'),
+};
+
+export const categoriasAPI = {
+  getAll: () => request('/api/categorias'),
+  create: (data) => request('/api/categorias', { method: 'POST', body: data }),
+  update: (id, data) => request(`/api/categorias/${id}`, { method: 'PUT', body: data }),
+  remove: (id) => request(`/api/categorias/${id}`, { method: 'DELETE' }),
+};
+
+export const marcasAPI = {
+  getAll: () => request('/api/marcas'),
+  create: (data) => request('/api/marcas', { method: 'POST', body: data }),
+  update: (id, data) => request(`/api/marcas/${id}`, { method: 'PUT', body: data }),
+  remove: (id) => request(`/api/marcas/${id}`, { method: 'DELETE' }),
 };

@@ -1,19 +1,26 @@
-const { db } = require('../config/database');
+const { query } = require('../config/database');
 const { calcularPrecioBase } = require('../utils/calculations');
 
 exports.getAll = async (req, res) => {
   try {
-    const { activo } = req.query;
-    let query = 'SELECT id, codigo, nombre, descripcion, costo, precio_base, precio_venta, stock, stock_minimo, categoria, activo FROM productos';
+    const { activo, categoria } = req.query;
+    let sql = 'SELECT id, codigo, nombre, descripcion, costo, precio_base, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, imagen_url, activo FROM productos';
     const params = [];
+    const conditions = [];
 
     if (activo !== undefined) {
-      query += ' WHERE activo = ?';
-      params.push(activo === 'true' ? 1 : 0);
+      conditions.push('activo = $' + (params.length + 1));
+      params.push(activo === 'true' ? true : false);
     }
-    query += ' ORDER BY nombre';
+    if (categoria) {
+      conditions.push('categoria = $' + (params.length + 1));
+      params.push(categoria);
+    }
 
-    const [rows] = await db.async.query(query, params);
+    if (conditions.length > 0) sql += ' WHERE ' + conditions.join(' AND ');
+    sql += ' ORDER BY nombre';
+
+    const { rows } = await query(sql, params);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -22,7 +29,7 @@ exports.getAll = async (req, res) => {
 
 exports.getById = async (req, res) => {
   try {
-    const [rows] = await db.async.query('SELECT * FROM productos WHERE id = ?', [req.params.id]);
+    const { rows } = await query('SELECT * FROM productos WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });
     res.json(rows[0]);
   } catch (error) {
@@ -32,22 +39,22 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { codigo, nombre, descripcion, costo, precio_venta, stock, stock_minimo, categoria } = req.body;
+    const { codigo, nombre, descripcion, costo, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id } = req.body;
     const precio_base = calcularPrecioBase(costo);
 
-    const [result] = await db.async.query(
-      'INSERT INTO productos (codigo, nombre, descripcion, costo, precio_base, precio_venta, stock, stock_minimo, categoria) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [codigo, nombre, descripcion, costo, precio_base, precio_venta || null, stock || 0, stock_minimo || 0, categoria]
+    const { rows } = await query(
+      'INSERT INTO productos (codigo, nombre, descripcion, costo, precio_base, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id',
+      [codigo, nombre, descripcion, costo, precio_base, precio_venta || null, stock || 0, stock_minimo || 0, categoria, categoria_id || null, marca_id || null]
     );
 
     if (stock > 0) {
-      await db.async.query(
-        'INSERT INTO inventario_movimientos (producto_id, tipo, cantidad, referencia) VALUES (?, ?, ?, ?)',
-        [result.insertId, 'entrada', stock, 'Stock inicial']
+      await query(
+        'INSERT INTO inventario_movimientos (producto_id, tipo, cantidad, referencia) VALUES ($1, $2, $3, $4)',
+        [rows[0].id, 'entrada', stock, 'Stock inicial']
       );
     }
 
-    res.status(201).json({ id: result.insertId, precio_base, message: 'Producto creado exitosamente' });
+    res.status(201).json({ id: rows[0].id, precio_base, message: 'Producto creado exitosamente' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -55,26 +62,34 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const { codigo, nombre, descripcion, costo, precio_venta, stock, stock_minimo, categoria, activo } = req.body;
+    const { codigo, nombre, descripcion, costo, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, activo } = req.body;
 
     const fields = [];
     const params = [];
+    let idx = 1;
 
-    if (codigo !== undefined) { fields.push('codigo = ?'); params.push(codigo); }
-    if (nombre !== undefined) { fields.push('nombre = ?'); params.push(nombre); }
-    if (descripcion !== undefined) { fields.push('descripcion = ?'); params.push(descripcion); }
-    if (costo !== undefined) { fields.push('costo = ?'); params.push(costo); fields.push('precio_base = ?'); params.push(calcularPrecioBase(costo)); }
-    if (precio_venta !== undefined) { fields.push('precio_venta = ?'); params.push(precio_venta); }
-    if (stock !== undefined) { fields.push('stock = ?'); params.push(stock); }
-    if (stock_minimo !== undefined) { fields.push('stock_minimo = ?'); params.push(stock_minimo); }
-    if (categoria !== undefined) { fields.push('categoria = ?'); params.push(categoria); }
-    if (activo !== undefined) { fields.push('activo = ?'); params.push(activo); }
+    if (codigo !== undefined) { fields.push(`codigo = $${idx++}`); params.push(codigo); }
+    if (nombre !== undefined) { fields.push(`nombre = $${idx++}`); params.push(nombre); }
+    if (descripcion !== undefined) { fields.push(`descripcion = $${idx++}`); params.push(descripcion); }
+    if (costo !== undefined) {
+      fields.push(`costo = $${idx++}`);
+      params.push(costo);
+      fields.push(`precio_base = $${idx++}`);
+      params.push(calcularPrecioBase(costo));
+    }
+    if (precio_venta !== undefined) { fields.push(`precio_venta = $${idx++}`); params.push(precio_venta); }
+    if (stock !== undefined) { fields.push(`stock = $${idx++}`); params.push(stock); }
+    if (stock_minimo !== undefined) { fields.push(`stock_minimo = $${idx++}`); params.push(stock_minimo); }
+    if (categoria !== undefined) { fields.push(`categoria = $${idx++}`); params.push(categoria); }
+    if (categoria_id !== undefined) { fields.push(`categoria_id = $${idx++}`); params.push(categoria_id); }
+    if (marca_id !== undefined) { fields.push(`marca_id = $${idx++}`); params.push(marca_id); }
+    if (activo !== undefined) { fields.push(`activo = $${idx++}`); params.push(activo); }
 
     if (fields.length === 0) return res.status(400).json({ error: 'No hay campos para actualizar' });
 
     params.push(req.params.id);
-    await db.async.query(
-      `UPDATE productos SET ${fields.join(', ')} WHERE id = ?`,
+    await query(
+      `UPDATE productos SET ${fields.join(', ')} WHERE id = $${idx}`,
       params
     );
     res.json({ message: 'Producto actualizado exitosamente' });
@@ -85,7 +100,7 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    await db.async.query('DELETE FROM productos WHERE id = ?', [req.params.id]);
+    await query('DELETE FROM productos WHERE id = $1', [req.params.id]);
     res.json({ message: 'Producto eliminado exitosamente' });
   } catch (error) {
     res.status(500).json({ error: error.message });

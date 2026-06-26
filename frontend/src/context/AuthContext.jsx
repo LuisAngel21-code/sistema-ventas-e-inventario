@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 
-const CREDENTIALS = { username: 'admin', password: 'Cams2024' };
 const AUTH_KEY = 'muebleria_cams_auth';
 
 const AuthContext = createContext(null);
@@ -22,16 +21,27 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  function login(username, password) {
-    if (username === CREDENTIALS.username && password === CREDENTIALS.password) {
-      const tk = btoa(`${username}:${password}`);
-      const userData = { username, role: 'admin' };
-      localStorage.setItem(AUTH_KEY, JSON.stringify({ user: userData, token: tk }));
-      setUser(userData);
-      setToken(tk);
+  async function login(username, password) {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (!data.success) return false;
+
+      localStorage.setItem(AUTH_KEY, JSON.stringify({
+        user: data.user,
+        token: data.token,
+      }));
+      setUser(data.user);
+      setToken(data.token);
       return true;
+    } catch (err) {
+      console.error('Error de login:', err);
+      return false;
     }
-    return false;
   }
 
   function logout() {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Store, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
@@ -7,79 +8,80 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      if (login(username, password)) {
-        setLoading(false);
-      } else {
-        setError('Usuario o contraseña incorrectos');
-        setLoading(false);
-      }
-    }, 600);
+    try {
+      const success = await login(username, password);
+      if (!success) setError('Usuario o contraseña incorrectos');
+    } catch {
+      setError('Error de conexión con el servidor');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 p-4 relative overflow-hidden">
+      {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute -top-40 -right-40 w-[30rem] h-[30rem] bg-wood-500/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-[30rem] h-[30rem] bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-white/[0.02] rounded-full" />
       </div>
 
       <div className="relative w-full max-w-sm">
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
-          <div className="px-8 pt-10 pb-6 text-center">
-            <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm border border-white/10">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
-              </svg>
+        {/* Logo card */}
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
+          <div className="px-8 pt-10 pb-4 text-center">
+            <div className="w-16 h-16 bg-wood-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-wood-500/20">
+              <Store className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Mueblería Cams</h1>
-            <p className="text-sm text-white/60 mt-1">Sistema de Gestión</p>
+            <h1 className="text-2xl font-display font-bold text-white tracking-tight">Mueblería Cams</h1>
+            <p className="text-sm text-white/50 mt-1 font-body">Sistema de Gestión de Inventario</p>
           </div>
 
           <form onSubmit={handleSubmit} className="px-8 pb-10 space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-white/60 uppercase tracking-wider">Usuario</label>
-              <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all"
-                  placeholder="Ingrese usuario"
-                  autoFocus
-                  required
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider font-body">Usuario</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-wood-500/40 focus:border-wood-500/50 transition-all font-body"
+                placeholder="Ingrese su usuario"
+                autoFocus
+                required
+              />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-white/60 uppercase tracking-wider">Contraseña</label>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-white/60 uppercase tracking-wider font-body">Contraseña</label>
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all"
-                  placeholder="Ingrese contraseña"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg pl-4 pr-10 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-wood-500/40 focus:border-wood-500/50 transition-all font-body"
+                  placeholder="Ingrese su contraseña"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-200 text-sm px-4 py-2.5 rounded-lg animate-slideDown">
+              <div className="bg-red-500/10 border border-red-500/20 text-red-200 text-sm px-4 py-2.5 rounded-lg animate-slideDown font-body">
                 {error}
               </div>
             )}
@@ -87,14 +89,11 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-2.5 rounded-lg font-medium text-sm hover:from-indigo-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.98]"
+              className="w-full bg-wood-500 hover:bg-wood-600 text-white py-2.5 rounded-lg font-medium text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg shadow-wood-500/20 font-body"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Ingresando...
                 </span>
               ) : 'Ingresar'}
@@ -102,7 +101,7 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="text-center text-xs text-white/30 mt-6">© 2026 Mueblería Cams</p>
+        <p className="text-center text-xs text-white/20 mt-6 font-body">© {new Date().getFullYear()} Mueblería Cams · Todos los derechos reservados</p>
       </div>
     </div>
   );

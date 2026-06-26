@@ -1,34 +1,34 @@
-const pool = require('../config/database');
+const jwt = require('jsonwebtoken');
 
-const usuariosAutorizados = {
-  'admin': 'admin123',
-  'vendedor1': 'ventas2024',
-  'vendedor2': 'ventas2024'
-};
+const JWT_SECRET = process.env.JWT_SECRET || 'cams_secret_key_change_in_production';
 
-exports.basicAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+function authenticate(req, res, next) {
+  if (req.path === '/login' || req.path === '/health') return next();
 
-  if (!authHeader || !authHeader.startsWith('Basic ')) {
-    res.setHeader('WWW-Authenticate', 'Basic realm="Sistema Ventas"');
-    return res.status(401).json({ error: 'Autenticación requerida' });
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token de autenticación requerido' });
   }
 
-  const base64Credentials = authHeader.split(' ')[1];
-  const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-  const [username, password] = credentials.split(':');
+  const token = auth.slice(7);
 
-  if (usuariosAutorizados[username] && usuariosAutorizados[username] === password) {
-    req.user = { username, role: username === 'admin' ? 'admin' : 'vendedor' };
-    return next();
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expirado', code: 'TOKEN_EXPIRED' });
+    }
+    return res.status(401).json({ error: 'Token inválido' });
   }
+}
 
-  return res.status(401).json({ error: 'Credenciales inválidas' });
-};
-
-exports.adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+function adminOnly(req, res, next) {
+  if (req.user && req.user.rol === 'admin') {
     return next();
   }
   return res.status(403).json({ error: 'Acceso denegado. Solo administradores.' });
-};
+}
+
+module.exports = { authenticate, adminOnly };

@@ -1,117 +1,148 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ventasAPI, vendedoresAPI } from '../services/api';
+import { ShoppingCart, Plus, Search, Trash2, Calendar, User } from 'lucide-react';
+import Spinner from '../components/ui/Spinner';
+import Badge from '../components/ui/Badge';
+import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 
 export default function VentasPage() {
   const [ventas, setVentas] = useState([]);
   const [vendedores, setVendedores] = useState([]);
-  const [filtroVendedor, setFiltroVendedor] = useState('');
-  const [filtroDesde, setFiltroDesde] = useState('');
-  const [filtroHasta, setFiltroHasta] = useState('');
   const [loading, setLoading] = useState(true);
+  const [filtros, setFiltros] = useState({ vendedor_id: '', desde: '', hasta: '' });
+  const [deleteId, setDeleteId] = useState(null);
 
-  async function loadVentas() {
+  function load() {
     setLoading(true);
-    try {
-      const params = {};
-      if (filtroVendedor) params.vendedor_id = filtroVendedor;
-      if (filtroDesde) params.desde = filtroDesde;
-      if (filtroHasta) params.hasta = filtroHasta;
-      const data = await ventasAPI.getAll(params);
-      setVentas(data);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
+    const params = {};
+    if (filtros.vendedor_id) params.vendedor_id = filtros.vendedor_id;
+    if (filtros.desde) params.desde = filtros.desde;
+    if (filtros.hasta) params.hasta = filtros.hasta;
+
+    Promise.all([
+      ventasAPI.getAll(params),
+      vendedoresAPI.getAll(),
+    ]).then(([v, vends]) => {
+      setVentas(v);
+      setVendedores(vends);
+    }).catch(console.error).finally(() => setLoading(false));
   }
 
-  useEffect(() => {
-    vendedoresAPI.getAll().then(setVendedores).catch(console.error);
-    loadVentas();
-  }, []);
+  useEffect(() => { load(); }, []);
 
-  async function eliminarVenta(id) {
-    if (!confirm('¿Eliminar esta venta? Esta acción es irreversible.')) return;
-    try { await ventasAPI.remove(id); loadVentas(); }
-    catch (err) { alert(err.message); }
+  async function eliminar(id) {
+    try {
+      await ventasAPI.remove(id);
+      setVentas(ventas.filter(v => v.id !== id));
+      setDeleteId(null);
+    } catch (err) { alert(err.message); }
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Ventas</h3>
-        <Link to="/ventas/nueva" className="bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition-colors">
-          + Nueva Venta
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="page-title">Ventas</h1>
+          <p className="page-subtitle">Gestión de ventas registradas</p>
+        </div>
+        <Link to="/ventas/nueva">
+          <Button icon={Plus}>Nueva Venta</Button>
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-5 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Filters */}
+      <div className="card-page p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Vendedor</label>
-            <select value={filtroVendedor} onChange={(e) => setFiltroVendedor(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900">
+            <label className="input-label">Vendedor</label>
+            <select
+              className="input-field"
+              value={filtros.vendedor_id}
+              onChange={(e) => setFiltros({ ...filtros, vendedor_id: e.target.value })}
+            >
               <option value="">Todos</option>
-              {vendedores.map((v) => (
+              {vendedores.map(v => (
                 <option key={v.id} value={v.id}>{v.nombre} {v.apellido}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Desde</label>
-            <input type="date" value={filtroDesde} onChange={(e) => setFiltroDesde(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" />
+            <label className="input-label">Desde</label>
+            <input type="date" className="input-field" value={filtros.desde}
+              onChange={(e) => setFiltros({ ...filtros, desde: e.target.value })} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Hasta</label>
-            <input type="date" value={filtroHasta} onChange={(e) => setFiltroHasta(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" />
+            <label className="input-label">Hasta</label>
+            <input type="date" className="input-field" value={filtros.hasta}
+              onChange={(e) => setFiltros({ ...filtros, hasta: e.target.value })} />
           </div>
           <div className="flex items-end">
-            <button onClick={loadVentas}
-              className="w-full bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition-colors">
-              Filtrar
-            </button>
+            <Button onClick={load} icon={Search} className="w-full">Filtrar</Button>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        ) : (
+      {/* Table */}
+      <div className="card-page overflow-hidden">
+        {loading ? <Spinner className="h-48" /> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">ID</th>
-                  <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Fecha</th>
-                  <th className="text-left py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Vendedor</th>
-                  <th className="text-right py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Total</th>
-                  <th className="text-center py-3 px-5 font-medium text-gray-500 text-xs uppercase tracking-wider">Acciones</th>
+                <tr className="bg-gray-50/50">
+                  <th className="table-header">#</th>
+                  <th className="table-header">
+                    <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Fecha</div>
+                  </th>
+                  <th className="table-header">
+                    <div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Vendedor</div>
+                  </th>
+                  <th className="table-header text-right">Total</th>
+                  <th className="table-header text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {ventas.map((v) => (
-                  <tr key={v.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    <td className="py-3 px-5 text-gray-500 font-mono">#{v.id}</td>
-                    <td className="py-3 px-5 text-gray-700">{new Date(v.fecha).toLocaleString('es-PE')}</td>
-                    <td className="py-3 px-5 text-gray-700">{v.vendedor_nombre} {v.vendedor_apellido}</td>
-                    <td className="py-3 px-5 text-right font-medium text-gray-900">S/ {Number(v.total).toFixed(2)}</td>
-                    <td className="py-3 px-5 text-center">
-                      <Link to={`/ventas/${v.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium mx-1.5">Ver</Link>
-                      <button onClick={() => eliminarVenta(v.id)} className="text-red-600 hover:text-red-800 text-sm font-medium mx-1.5">Eliminar</button>
+                {ventas.map((v, i) => (
+                  <tr key={v.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <td className="table-cell text-gray-400">{v.id}</td>
+                    <td className="table-cell text-gray-700">{new Date(v.fecha).toLocaleDateString('es-PE')}</td>
+                    <td className="table-cell text-gray-700">{v.vendedor_nombre} {v.vendedor_apellido}</td>
+                    <td className="table-cell text-right font-semibold text-gray-900">S/ {Number(v.total).toFixed(2)}</td>
+                    <td className="table-cell text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Link to={`/ventas/${v.id}`}>
+                          <Button variant="ghost" size="sm">Ver</Button>
+                        </Link>
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(v.id)}>
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
                 {ventas.length === 0 && (
-                  <tr><td colSpan={5} className="text-center py-10 text-gray-400">No hay ventas registradas</td></tr>
+                  <tr>
+                    <td colSpan={5} className="text-center py-12 text-gray-400">
+                      <ShoppingCart className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      No hay ventas registradas
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
           </div>
         )}
       </div>
+
+      {/* Delete modal */}
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Confirmar eliminación">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar esta venta? Esta acción no se puede deshacer.</p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
+          <Button variant="danger" onClick={() => eliminar(deleteId)}>Eliminar</Button>
+        </div>
+      </Modal>
     </div>
   );
 }

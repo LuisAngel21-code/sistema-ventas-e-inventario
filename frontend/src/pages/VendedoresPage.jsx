@@ -1,166 +1,147 @@
 import { useState, useEffect } from 'react';
 import { vendedoresAPI } from '../services/api';
+import { Users, Plus, Pencil, Trash2, Mail, Phone, DollarSign, UserCircle } from 'lucide-react';
+import Spinner from '../components/ui/Spinner';
+import Badge from '../components/ui/Badge';
+import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
+import Input from '../components/ui/Input';
+
+const emptyVendedor = { nombre: '', apellido: '', email: '', telefono: '', sueldo_fijo: 350, username: '', password: '' };
 
 export default function VendedoresPage() {
   const [vendedores, setVendedores] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ nombre: '', apellido: '', email: '', telefono: '', sueldo_fijo: '350' });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState(emptyVendedor);
 
-  async function loadVendedores() {
-    try {
-      const data = await vendedoresAPI.getAll();
-      setVendedores(data);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
+  function load() {
+    setLoading(true);
+    vendedoresAPI.getAll()
+      .then(setVendedores)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }
 
-  useEffect(() => { loadVendedores(); }, []);
+  useEffect(() => { load(); }, []);
 
   function openCreate() {
-    setEditing(null);
-    setForm({ nombre: '', apellido: '', email: '', telefono: '', sueldo_fijo: '350' });
-    setShowModal(true);
+    setEditId(null);
+    setForm(emptyVendedor);
+    setModalOpen(true);
   }
 
-  function openEdit(v) {
-    setEditing(v.id);
-    setForm({
-      nombre: v.nombre, apellido: v.apellido, email: v.email || '',
-      telefono: v.telefono || '', sueldo_fijo: String(v.sueldo_fijo)
-    });
-    setShowModal(true);
+  async function openEdit(v) {
+    setEditId(v.id);
+    setForm({ nombre: v.nombre, apellido: v.apellido, email: v.email || '', telefono: v.telefono || '', sueldo_fijo: v.sueldo_fijo, username: '', password: '' });
+    setModalOpen(true);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const data = { ...form, sueldo_fijo: Number(form.sueldo_fijo) };
-      if (editing) {
-        await vendedoresAPI.update(editing, data);
+      const payload = { ...form, sueldo_fijo: Number(form.sueldo_fijo) };
+      if (editId) {
+        await vendedoresAPI.update(editId, payload);
       } else {
-        await vendedoresAPI.create(data);
+        await vendedoresAPI.create(payload);
       }
-      setShowModal(false);
-      loadVendedores();
+      setModalOpen(false);
+      load();
     } catch (err) { alert(err.message); }
   }
 
-  async function eliminarVendedor(id, nombre) {
-    if (!confirm(`¿Eliminar a "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  async function eliminar(id) {
+    if (!confirm('¿Eliminar vendedor?')) return;
     try {
       await vendedoresAPI.remove(id);
-      loadVendedores();
+      load();
     } catch (err) { alert(err.message); }
-  }
-
-  if (loading) {
-    return <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
-    </div>;
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Vendedores</h3>
-        <button onClick={openCreate} className="bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition-colors">
-          + Nuevo Vendedor
-        </button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="page-title">Vendedores</h1>
+          <p className="page-subtitle">Gestión del equipo de ventas</p>
+        </div>
+        <Button onClick={openCreate} icon={Plus}>Nuevo Vendedor</Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {vendedores.map((v) => (
-          <div key={v.id} className={`bg-white rounded-lg border border-gray-200 ${!v.activo ? 'opacity-50' : ''}`}>
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-medium">
-                  {v.nombre[0]}{v.apellido[0]}
+      {loading ? <Spinner className="h-48" /> : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {vendedores.map(v => (
+            <div key={v.id} className="stat-card p-5 hover:border-gray-200 group">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center">
+                    <UserCircle className="w-6 h-6 text-primary-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-semibold text-gray-900">{v.nombre} {v.apellido}</h3>
+                    <div className="mt-1">{v.activo ? <Badge variant="success">Activo</Badge> : <Badge variant="neutral">Inactivo</Badge>}</div>
+                  </div>
                 </div>
-                <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                  v.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                }`}>
-                  {v.activo ? 'Activo' : 'Inactivo'}
-                </span>
+                <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="sm" onClick={() => openEdit(v)}><Pencil className="w-3.5 h-3.5" /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => eliminar(v.id)}><Trash2 className="w-3.5 h-3.5 text-red-400" /></Button>
+                </div>
               </div>
-              <h4 className="font-medium text-gray-900">{v.nombre} {v.apellido}</h4>
-              <p className="text-sm text-gray-500 mt-0.5">{v.email || 'Sin email'}</p>
-              <p className="text-sm text-gray-500">{v.telefono || 'Sin teléfono'}</p>
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Sueldo fijo</span>
-                  <span className="font-medium text-gray-900">S/ {Number(v.sueldo_fijo).toFixed(2)}</span>
+              <div className="space-y-2 text-sm">
+                {v.email && (
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>{v.email}</span>
+                  </div>
+                )}
+                {v.telefono && (
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>{v.telefono}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-gray-700 font-medium">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  <span>Sueldo fijo: S/ {Number(v.sueldo_fijo).toFixed(2)}</span>
                 </div>
               </div>
             </div>
-            <div className="flex border-t border-gray-100">
-              <button onClick={() => openEdit(v)}
-                className="flex-1 py-2.5 text-sm text-blue-600 hover:bg-blue-50 transition-colors font-medium">
-                Editar
-              </button>
-              <button onClick={() => eliminarVendedor(v.id, `${v.nombre} ${v.apellido}`)}
-                className="flex-1 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium border-l border-gray-100">
-                Eliminar
-              </button>
+          ))}
+          {vendedores.length === 0 && (
+            <div className="col-span-full text-center py-12 text-gray-400">
+              <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              No hay vendedores registrados
             </div>
-          </div>
-        ))}
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-base font-semibold text-gray-900">
-                {editing ? 'Editar Vendedor' : 'Nuevo Vendedor'}
-              </h3>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-                  <input type="text" value={form.nombre}
-                    onChange={(e) => setForm({...form, nombre: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Apellido *</label>
-                  <input type="text" value={form.apellido}
-                    onChange={(e) => setForm({...form, apellido: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" required />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" value={form.email}
-                  onChange={(e) => setForm({...form, email: e.target.value})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                <input type="text" value={form.telefono}
-                  onChange={(e) => setForm({...form, telefono: e.target.value})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sueldo Fijo (S/)</label>
-                <input type="number" step="0.01" value={form.sueldo_fijo}
-                  onChange={(e) => setForm({...form, sueldo_fijo: e.target.value})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-slate-900 focus:border-slate-900" />
-              </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancelar</button>
-                <button type="submit"
-                  className="px-5 py-2 text-sm font-medium text-white bg-slate-900 rounded-md hover:bg-slate-800 transition-colors">
-                  {editing ? 'Guardar Cambios' : 'Crear Vendedor'}
-                </button>
-              </div>
-            </form>
-          </div>
+          )}
         </div>
       )}
+
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editId ? 'Editar Vendedor' : 'Nuevo Vendedor'}>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
+            <Input label="Apellido" value={form.apellido} onChange={(e) => setForm({ ...form, apellido: e.target.value })} required />
+          </div>
+          <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <Input label="Teléfono" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+          <Input label="Sueldo Fijo (S/)" type="number" step="0.01" value={form.sueldo_fijo}
+            onChange={(e) => setForm({ ...form, sueldo_fijo: e.target.value })} />
+          {!editId && (
+            <>
+              <Input label="Usuario de acceso" value={form.username}
+                onChange={(e) => setForm({ ...form, username: e.target.value })} required />
+              <Input label="Contraseña" type="password" value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+            </>
+          )}
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="secondary" type="button" onClick={() => setModalOpen(false)}>Cancelar</Button>
+            <Button type="submit">{editId ? 'Actualizar' : 'Crear Vendedor'}</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
