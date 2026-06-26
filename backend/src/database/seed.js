@@ -23,19 +23,20 @@ async function seed() {
   `);
 
   await query(`INSERT INTO vendedores (nombre, apellido, email, telefono, sueldo_fijo) VALUES
-    ('Admin', 'Sistema', 'admin@cams.com', '999999999', 350),
-    ('Jorge', 'Admin', 'jorge@gmail.com', '987654321', 350);
+    ('María', 'García', 'maria@tienda.com', '987654321', 350),
+    ('Carlos', 'López', 'carlos@tienda.com', '987654322', 350),
+    ('Ana', 'Martínez', 'ana@tienda.com', '987654323', 350);
   `);
 
   const hashAdmin = await bcrypt.hash('cams2026', 10);
   const hashJorge = await bcrypt.hash('jorge2026', 10);
 
   await query(
-    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (1, 'admin@cams.com', $1, 'admin')",
+    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (NULL, 'admin@cams.com', $1, 'admin')",
     [hashAdmin]
   );
   await query(
-    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (2, 'jorge@gmail.com', $1, 'admin')",
+    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (NULL, 'jorge@gmail.com', $1, 'admin')",
     [hashJorge]
   );
 
