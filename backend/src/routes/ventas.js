@@ -4,6 +4,6 @@ const controller = require('../controllers/ventaController');
 router.get('/', controller.getAll);
 router.get('/:id', controller.getById);
 router.post('/', controller.create);
-router.delete('/:id', controller.remove);
+router.put('/:id/anular', controller.anular);
 
 module.exports = router;

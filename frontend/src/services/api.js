@@ -81,7 +81,7 @@ export const ventasAPI = {
   },
   getById: (id) => request(`/api/ventas/${id}`),
   create: (data) => request('/api/ventas', { method: 'POST', body: data }),
-  remove: (id) => request(`/api/ventas/${id}`, { method: 'DELETE' }),
+  anular: (id) => request(`/api/ventas/${id}/anular`, { method: 'PUT' }),
 };
 
 export const inventarioAPI = {

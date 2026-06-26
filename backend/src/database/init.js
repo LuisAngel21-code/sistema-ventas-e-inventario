@@ -130,6 +130,14 @@ async function initDatabase() {
   await query(`CREATE INDEX IF NOT EXISTS idx_productos_categoria ON productos(categoria);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_pagos_vendedor ON pagos_vendedor(vendedor_id);`);
 
+  await query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='ventas' AND column_name='estado') THEN
+        ALTER TABLE ventas ADD COLUMN estado VARCHAR(20) DEFAULT 'completada';
+      END IF;
+    END $$;
+  `);
+
   console.log('Base de datos inicializada correctamente');
 }
 

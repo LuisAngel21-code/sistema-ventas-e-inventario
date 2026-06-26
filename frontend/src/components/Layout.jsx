@@ -53,22 +53,11 @@ export default function Layout() {
         ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
-        <div className="hidden lg:flex items-center gap-3 px-5 py-5 border-b border-white/10">
-          <div className="w-9 h-9 bg-wood-500 rounded-lg flex items-center justify-center">
-            <Store className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-base font-display font-bold tracking-tight">Mueblería Cams</h1>
-            <p className="text-xs text-primary-300">Sistema de Gestión</p>
-          </div>
+        <div className="hidden lg:flex items-center justify-center px-5 py-4 border-b border-white/10">
+          <img src="/logo.png" alt="Mueblería Cams" className="h-14 object-contain" />
         </div>
         <div className="lg:hidden px-5 py-4 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-wood-500 rounded-lg flex items-center justify-center">
-              <Store className="w-4 h-4 text-white" />
-            </div>
-            <h1 className="text-base font-display font-bold">Mueblería Cams</h1>
-          </div>
+          <img src="/logo.png" alt="Mueblería Cams" className="h-10 object-contain" />
           <button onClick={() => setOpen(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -102,12 +91,12 @@ export default function Layout() {
         <div className="px-4 py-3 border-t border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-wood-500/20 rounded-full flex items-center justify-center">
-                <UserCircle className="w-4 h-4 text-wood-400" />
+              <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center">
+                <UserCircle className="w-4 h-4 text-emerald-400" />
               </div>
               <div className="text-xs">
                 <p className="text-white font-medium">{user?.username || 'Usuario'}</p>
-                <p className="text-primary-400 capitalize">{user?.rol || ''} · v3.0</p>
+                <p className="text-primary-400 capitalize">{user?.rol || ''}</p>
               </div>
             </div>
             <button

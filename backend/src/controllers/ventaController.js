@@ -5,11 +5,11 @@ exports.getAll = async (req, res) => {
   try {
     const { desde, hasta, vendedor_id } = req.query;
     let sql = `
-      SELECT v.id, v.fecha, v.total,
+      SELECT v.id, v.fecha, v.total, v.estado,
              ve.nombre AS vendedor_nombre, ve.apellido AS vendedor_apellido
       FROM ventas v
       JOIN vendedores ve ON v.vendedor_id = ve.id
-      WHERE 1=1`;
+      WHERE v.estado = 'completada'`;
     const params = [];
     let idx = 1;
 
@@ -141,11 +141,46 @@ exports.create = async (req, res) => {
   }
 };
 
-exports.remove = async (req, res) => {
+exports.anular = async (req, res) => {
+  const client = await getConnection();
+
   try {
-    await query('DELETE FROM ventas WHERE id = $1', [req.params.id]);
-    res.json({ message: 'Venta eliminada' });
+    await client.query('BEGIN');
+
+    const { rows: venta } = await client.query(
+      "SELECT id, estado FROM ventas WHERE id = $1 FOR UPDATE",
+      [req.params.id]
+    );
+    if (venta.length === 0) throw new Error('Venta no encontrada');
+    if (venta[0].estado === 'anulada') throw new Error('La venta ya fue anulada');
+
+    const { rows: detalles } = await client.query(
+      'SELECT producto_id, cantidad FROM detalle_ventas WHERE venta_id = $1',
+      [req.params.id]
+    );
+
+    for (const det of detalles) {
+      await client.query(
+        'UPDATE productos SET stock = stock + $1 WHERE id = $2',
+        [det.cantidad, det.producto_id]
+      );
+      await client.query(
+        "INSERT INTO inventario_movimientos (producto_id, tipo, cantidad, referencia, venta_id) VALUES ($1, $2, $3, $4, $5)",
+        [det.producto_id, 'entrada', det.cantidad, `Anulación Venta #${req.params.id}`, req.params.id]
+      );
+    }
+
+    await client.query(
+      "UPDATE ventas SET estado = 'anulada' WHERE id = $1",
+      [req.params.id]
+    );
+
+    await client.query('COMMIT');
+    res.json({ message: 'Venta anulada exitosamente. Stock restaurado.' });
   } catch (error) {
+    await client.query('ROLLBACK');
     res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
   }
 };

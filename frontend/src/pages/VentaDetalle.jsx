@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ventasAPI } from '../services/api';
 import { ArrowLeft, Receipt, User, Calendar, Hash } from 'lucide-react';
-import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
+import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
 
 export default function VentaDetalle() {
@@ -30,7 +30,10 @@ export default function VentaDetalle() {
           <Button variant="ghost" icon={ArrowLeft}>Volver</Button>
         </Link>
         <div>
-          <h1 className="page-title">Venta #{venta.id}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="page-title">Venta #{venta.id}</h1>
+            {venta.estado === 'anulada' && <Badge variant="danger">Anulada</Badge>}
+          </div>
           <p className="page-subtitle">Detalle de la transacción</p>
         </div>
       </div>
