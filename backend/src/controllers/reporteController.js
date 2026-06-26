@@ -1,7 +1,26 @@
 const PDFDocument = require('pdfkit');
+const { PassThrough } = require('stream');
 const { query } = require('../config/database');
 const { generarReporteVendedor, generarReporteGeneral, generarReporteInventario } = require('../services/pdfService');
 const { calcularResumenVentas } = require('../utils/calculations');
+
+function bufferPDF(doc, generateFn, res, filename) {
+  const chunks = [];
+  const stream = doc.pipe(new PassThrough());
+  stream.on('data', chunk => chunks.push(chunk));
+  stream.on('end', () => {
+    const pdf = Buffer.concat(chunks);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.send(pdf);
+  });
+  stream.on('error', err => {
+    if (!res.headersSent) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  generateFn();
+}
 
 exports.reportePorVendedor = async (req, res) => {
   try {
@@ -36,14 +55,9 @@ exports.reportePorVendedor = async (req, res) => {
     }
 
     const resumen = calcularResumenVentas(detalles);
-
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=reporte_vendedor_${id}.pdf`);
-
-    doc.pipe(res);
-    generarReporteVendedor(doc, vendedores[0], detalles, resumen);
+    bufferPDF(doc, () => generarReporteVendedor(doc, vendedores[0], detalles, resumen), res, `reporte_vendedor_${id}.pdf`);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -99,11 +113,7 @@ exports.reporteGeneral = async (req, res) => {
 
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=reporte_general.pdf');
-
-    doc.pipe(res);
-    generarReporteGeneral(doc, detalles, resumenGlobal, vendedoresData);
+    bufferPDF(doc, () => generarReporteGeneral(doc, detalles, resumenGlobal, vendedoresData), res, 'reporte_general.pdf');
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -125,11 +135,7 @@ exports.reporteInventario = async (req, res) => {
 
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=reporte_inventario.pdf');
-
-    doc.pipe(res);
-    generarReporteInventario(doc, productos, movimientos);
+    bufferPDF(doc, () => generarReporteInventario(doc, productos, movimientos), res, 'reporte_inventario.pdf');
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
