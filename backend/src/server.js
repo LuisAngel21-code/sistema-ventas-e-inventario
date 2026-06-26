@@ -5,7 +5,6 @@ const morgan = require('morgan');
 const path = require('path');
 const { authenticate } = require('./middlewares/auth');
 const { query } = require('./config/database');
-const path = require('path');
 
 const authRoutes = require('./routes/auth');
 const vendedoresRoutes = require('./routes/vendedores');
