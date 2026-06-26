@@ -142,7 +142,7 @@ export default function NuevaVenta() {
                 { value: 'yape', label: 'Yape' },
                 { value: 'plin', label: 'Plin' },
                 { value: 'tarjeta', label: 'Tarjeta' },
-                { value: 'pos_quiqui', label: 'Pos Qui Qui' },
+                { value: 'qulqui', label: 'Qulqui' },
               ]}
             />
           </div>
