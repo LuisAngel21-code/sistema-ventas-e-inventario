@@ -53,11 +53,15 @@ export default function Layout() {
         ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
-        <div className="hidden lg:flex items-center justify-center px-5 py-4 border-b border-white/10">
-          <img src="/logo.png" alt="Mueblería Cams" className="h-14 object-contain" />
+        <div className="hidden lg:flex items-center justify-center px-5 py-5 border-b border-white/10">
+          <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-2.5 shadow-lg">
+            <img src="/logo.png" alt="Mueblería Cams" className="w-full h-full object-contain" />
+          </div>
         </div>
         <div className="lg:hidden px-5 py-4 border-b border-white/10 flex items-center justify-between">
-          <img src="/logo.png" alt="Mueblería Cams" className="h-10 object-contain" />
+          <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-1.5">
+            <img src="/logo.png" alt="Mueblería Cams" className="w-full h-full object-contain" />
+          </div>
           <button onClick={() => setOpen(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
             <X className="w-5 h-5" />
           </button>

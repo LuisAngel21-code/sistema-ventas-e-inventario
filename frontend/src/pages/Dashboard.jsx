@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ventasAPI, vendedoresAPI, productosAPI } from '../services/api';
-import { ShoppingCart, Users, Package, AlertTriangle, TrendingUp, DollarSign } from 'lucide-react';
+import { ShoppingCart, Users, Package, AlertTriangle, TrendingUp, DollarSign, Store } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 
 export default function Dashboard() {
@@ -49,9 +49,14 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="page-title">Dashboard</h1>
-        <p className="page-subtitle">Resumen general del sistema</p>
+      <div className="flex items-center gap-4 mb-2">
+        <div className="w-14 h-14 rounded-xl bg-primary-900 flex items-center justify-center shadow-lg shadow-primary-900/20">
+          <img src="/logo.png" alt="" className="w-9 h-9 object-contain" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-display font-bold text-primary-900">Mueblería Cams</h1>
+          <p className="text-sm text-gray-500">Sistema de Gestión de Inventario</p>
+        </div>
       </div>
 
       {/* Stat cards */}
