@@ -53,14 +53,24 @@ export default function Layout() {
         ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
-        <div className="hidden lg:flex items-center justify-center px-5 py-5 border-b border-white/10">
+        <div className="hidden lg:flex flex-col items-center px-5 py-5 border-b border-white/10 space-y-2.5">
           <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-2.5 shadow-lg">
             <img src="/logo.png" alt="Mueblería Cams" className="w-full h-full object-contain" />
           </div>
+          <div className="text-center">
+            <h1 className="text-base font-display font-bold text-white tracking-tight">Mueblería Cams</h1>
+            <p className="text-xs text-primary-300">Sistema de Gestión</p>
+          </div>
         </div>
         <div className="lg:hidden px-5 py-4 border-b border-white/10 flex items-center justify-between">
-          <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-1.5">
-            <img src="/logo.png" alt="Mueblería Cams" className="w-full h-full object-contain" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center p-1.5">
+              <img src="/logo.png" alt="Mueblería Cams" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <p className="text-sm font-display font-bold text-white">Mueblería Cams</p>
+              <p className="text-xs text-primary-300">Sistema de Gestión</p>
+            </div>
           </div>
           <button onClick={() => setOpen(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors">
             <X className="w-5 h-5" />
