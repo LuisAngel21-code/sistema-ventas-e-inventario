@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, AlertTriangle, X } from 'lucide-react';
 
 const ToastContext = createContext(null);
 
@@ -7,18 +7,21 @@ const icons = {
   success: CheckCircle,
   error: XCircle,
   info: AlertCircle,
+  warning: AlertTriangle,
 };
 
 const colors = {
   success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
   error: 'bg-red-50 border-red-200 text-red-800',
   info: 'bg-blue-50 border-blue-200 text-blue-800',
+  warning: 'bg-amber-50 border-amber-200 text-amber-800',
 };
 
 const iconColors = {
   success: 'text-emerald-500',
   error: 'text-red-500',
   info: 'text-blue-500',
+  warning: 'text-amber-500',
 };
 
 export function ToastProvider({ children }) {

@@ -4,11 +4,13 @@ import { FileText, Download, Calendar, User } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Select from '../components/ui/Select';
 import Button from '../components/ui/Button';
+import { useToast } from '../context/ToastContext';
 
 export default function ReportesPage() {
   const [vendedores, setVendedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtros, setFiltros] = useState({ vendedor_id: '', desde: '', hasta: '' });
+  const { showToast } = useToast();
 
   useEffect(() => {
     vendedoresAPI.getAll()
@@ -16,7 +18,7 @@ export default function ReportesPage() {
       .catch(console.error);
   }, []);
 
-  function descargar(tipo, params = {}) {
+  async function descargar(tipo, params = {}) {
     let url;
     if (tipo === 'vendedor') {
       url = reportesAPI.vendedor(params.id, params.desde || '', params.hasta || '');
@@ -25,7 +27,28 @@ export default function ReportesPage() {
     } else {
       url = reportesAPI.inventario();
     }
-    window.open(url, '_blank');
+
+    try {
+      const res = await fetch(url);
+      const contentType = res.headers.get('content-type');
+
+      if (contentType && contentType.includes('application/pdf')) {
+        const blob = await res.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `${tipo}_${Date.now()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(blobUrl);
+      } else {
+        const data = await res.json();
+        showToast(data.error || 'No hay datos disponibles', 'warning');
+      }
+    } catch (err) {
+      showToast('Error al descargar el reporte', 'error');
+    }
   }
 
   const reportes = [
