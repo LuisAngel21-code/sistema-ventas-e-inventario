@@ -39,8 +39,8 @@ export default function Login() {
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
           <div className="px-8 pt-10 pb-4 text-center">
             <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center p-3 shadow-xl shadow-emerald-500/10">
-  <img src="/logo.png" alt="Mueblería Cams" className="w-full h-full object-contain" />
-</div>
+              <img src="/logo.png" alt="Mueblería Cams" className="w-full h-full object-contain" />
+            </div>
             <h1 className="text-2xl font-display font-bold text-white tracking-tight">Mueblería Cams</h1>
             <p className="text-sm text-white/50 mt-1 font-body">Sistema de Gestión de Inventario</p>
           </div>
