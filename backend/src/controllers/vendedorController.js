@@ -27,21 +27,13 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { nombre, apellido, email, telefono, sueldo_fijo, username, password } = req.body;
+    const { nombre, apellido, email, telefono, sueldo_fijo } = req.body;
 
     const { rows } = await query(
       'INSERT INTO vendedores (nombre, apellido, email, telefono, sueldo_fijo) VALUES ($1, $2, $3, $4, $5) RETURNING id',
       [nombre, apellido, email, telefono, sueldo_fijo || 350.00]
     );
     const vendedorId = rows[0].id;
-
-    if (username && password) {
-      const hash = await bcrypt.hash(password, 10);
-      await query(
-        "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES ($1, $2, $3, 'vendedor')",
-        [vendedorId, username, hash]
-      );
-    }
 
     res.status(201).json({ id: vendedorId, message: 'Vendedor creado exitosamente' });
   } catch (error) {

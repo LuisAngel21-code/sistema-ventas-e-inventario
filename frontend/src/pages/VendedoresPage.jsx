@@ -7,7 +7,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 
-const emptyVendedor = { nombre: '', apellido: '', email: '', telefono: '', sueldo_fijo: 350, username: '', password: '' };
+const emptyVendedor = { nombre: '', apellido: '', email: '', telefono: '', sueldo_fijo: 350 };
 
 export default function VendedoresPage() {
   const [vendedores, setVendedores] = useState([]);
@@ -34,7 +34,7 @@ export default function VendedoresPage() {
 
   async function openEdit(v) {
     setEditId(v.id);
-    setForm({ nombre: v.nombre, apellido: v.apellido, email: v.email || '', telefono: v.telefono || '', sueldo_fijo: v.sueldo_fijo, username: '', password: '' });
+    setForm({ nombre: v.nombre, apellido: v.apellido, email: v.email || '', telefono: v.telefono || '', sueldo_fijo: v.sueldo_fijo });
     setModalOpen(true);
   }
 
@@ -128,14 +128,7 @@ export default function VendedoresPage() {
           <Input label="Teléfono" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
           <Input label="Sueldo Fijo (S/)" type="number" step="0.01" value={form.sueldo_fijo}
             onChange={(e) => setForm({ ...form, sueldo_fijo: e.target.value })} />
-          {!editId && (
-            <>
-              <Input label="Usuario de acceso" value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })} required />
-              <Input label="Contraseña" type="password" value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })} required />
-            </>
-          )}
+          
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="secondary" type="button" onClick={() => setModalOpen(false)}>Cancelar</Button>
             <Button type="submit">{editId ? 'Actualizar' : 'Crear Vendedor'}</Button>
