@@ -5,6 +5,7 @@ import { Plus, Trash2, Save, ArrowLeft, DollarSign } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Select from '../components/ui/Select';
 import Input from '../components/ui/Input';
+import { useToast } from '../context/ToastContext';
 
 export default function NuevaVenta() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function NuevaVenta() {
   const [vendedorId, setVendedorId] = useState('');
   const [items, setItems] = useState([{ producto_id: '', cantidad: 1, precio_final: '' }]);
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -74,9 +76,10 @@ export default function NuevaVenta() {
         })),
       };
       const result = await ventasAPI.create(payload);
+      showToast('Venta registrada exitosamente', 'success');
       navigate(`/ventas/${result.id}`);
     } catch (err) {
-      alert(err.message);
+      showToast(err.message, 'error');
     } finally {
       setSaving(false);
     }

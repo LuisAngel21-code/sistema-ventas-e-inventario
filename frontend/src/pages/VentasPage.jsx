@@ -6,12 +6,14 @@ import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
+import { useToast } from '../context/ToastContext';
 
 export default function VentasPage() {
   const [ventas, setVentas] = useState([]);
   const [vendedores, setVendedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtros, setFiltros] = useState({ vendedor_id: '', desde: '', hasta: '' });
+  const { showToast } = useToast();
   const [deleteId, setDeleteId] = useState(null);
 
   function load() {
@@ -37,7 +39,8 @@ export default function VentasPage() {
       await ventasAPI.remove(id);
       setVentas(ventas.filter(v => v.id !== id));
       setDeleteId(null);
-    } catch (err) { alert(err.message); }
+      showToast('Venta eliminada', 'success');
+    } catch (err) { showToast(err.message, 'error'); }
   }
 
   return (

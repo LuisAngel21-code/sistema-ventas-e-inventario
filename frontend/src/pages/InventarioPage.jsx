@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import Select from '../components/ui/Select';
+import { useToast } from '../context/ToastContext';
 
 export default function InventarioPage() {
   const [tab, setTab] = useState('stock');
@@ -14,6 +15,7 @@ export default function InventarioPage() {
   const [movimientos, setMovimientos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [entryOpen, setEntryOpen] = useState(false);
+  const { showToast } = useToast();
   const [entryForm, setEntryForm] = useState({ producto_id: '', cantidad: '', referencia: '' });
 
   function loadStock() {
@@ -47,8 +49,9 @@ export default function InventarioPage() {
       });
       setEntryOpen(false);
       setEntryForm({ producto_id: '', cantidad: '', referencia: '' });
+      showToast('Stock actualizado exitosamente', 'success');
       loadStock();
-    } catch (err) { alert(err.message); }
+    } catch (err) { showToast(err.message, 'error'); }
   }
 
   const [productos, setProductos] = useState([]);

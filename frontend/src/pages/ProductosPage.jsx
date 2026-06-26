@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
+import { useToast } from '../context/ToastContext';
 
 const emptyProduct = {
   codigo: '', nombre: '', descripcion: '', costo: '', categoria: '',
@@ -19,6 +20,7 @@ export default function ProductosPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(emptyProduct);
+  const { showToast } = useToast();
   const [search, setSearch] = useState('');
 
   function load() {
@@ -52,7 +54,7 @@ export default function ProductosPage() {
         precio_venta: prod.precio_venta || '',
       });
       setModalOpen(true);
-    } catch (err) { alert(err.message); }
+    } catch (err) { showToast(err.message, 'error'); }
   }
 
   async function handleSubmit(e) {
@@ -72,16 +74,18 @@ export default function ProductosPage() {
         await productosAPI.create(payload);
       }
       setModalOpen(false);
+      showToast(editId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente', 'success');
       load();
-    } catch (err) { alert(err.message); }
+    } catch (err) { showToast(err.message, 'error'); }
   }
 
   async function eliminar(id) {
     if (!confirm('¿Eliminar producto?')) return;
     try {
       await productosAPI.remove(id);
+      showToast('Producto eliminado exitosamente', 'success');
       load();
-    } catch (err) { alert(err.message); }
+    } catch (err) { showToast(err.message, 'error'); }
   }
 
   const filtered = productos.filter(p =>

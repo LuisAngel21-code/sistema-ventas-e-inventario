@@ -6,6 +6,7 @@ import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
+import { useToast } from '../context/ToastContext';
 
 const emptyVendedor = { nombre: '', apellido: '', email: '', telefono: '', sueldo_fijo: 350 };
 
@@ -14,6 +15,7 @@ export default function VendedoresPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
+  const { showToast } = useToast();
   const [form, setForm] = useState(emptyVendedor);
 
   function load() {
@@ -48,16 +50,18 @@ export default function VendedoresPage() {
         await vendedoresAPI.create(payload);
       }
       setModalOpen(false);
+      showToast(editId ? 'Vendedor actualizado exitosamente' : 'Vendedor creado exitosamente', 'success');
       load();
-    } catch (err) { alert(err.message); }
+    } catch (err) { showToast(err.message, 'error'); }
   }
 
   async function eliminar(id) {
     if (!confirm('¿Eliminar vendedor?')) return;
     try {
       await vendedoresAPI.remove(id);
+      showToast('Vendedor eliminado exitosamente', 'success');
       load();
-    } catch (err) { alert(err.message); }
+    } catch (err) { showToast(err.message, 'error'); }
   }
 
   return (
