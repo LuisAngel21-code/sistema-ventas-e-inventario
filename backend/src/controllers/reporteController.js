@@ -55,9 +55,10 @@ exports.reportePorVendedor = async (req, res) => {
     }
 
     const resumen = calcularResumenVentas(detalles);
+    const vendedor = { ...vendedores[0], sueldo_fijo: Number(vendedores[0].sueldo_fijo) || 350 };
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
-    bufferPDF(doc, () => generarReporteVendedor(doc, vendedores[0], detalles, resumen), res, `reporte_vendedor_${id}.pdf`);
+    bufferPDF(doc, () => generarReporteVendedor(doc, vendedor, detalles, resumen), res, `reporte_vendedor_${id}.pdf`);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
