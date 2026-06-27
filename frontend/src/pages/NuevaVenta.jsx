@@ -68,6 +68,8 @@ export default function NuevaVenta() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    alert('Formulario enviado');
+    console.log('handleSubmit ejecutado', { vendedorId, items, nroComprobante, comprobanteFile, metodoPago, voucherFile });
     if (!vendedorId) return showToast('Seleccione un vendedor', 'warning');
     if (items.some(i => !i.producto_id)) return showToast('Complete todos los productos', 'warning');
     if (!nroComprobante) return showToast('Nro. de comprobante requerido', 'warning');
