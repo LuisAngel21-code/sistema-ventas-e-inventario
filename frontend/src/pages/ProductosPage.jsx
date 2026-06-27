@@ -26,6 +26,8 @@ export default function ProductosPage() {
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState('');
   const [filtroProveedor, setFiltroProveedor] = useState('');
+  const [catEsOtro, setCatEsOtro] = useState(false);
+  const [marcaText, setMarcaText] = useState('');
 
   function load() {
     setLoading(true);
@@ -44,6 +46,8 @@ export default function ProductosPage() {
   function openCreate() {
     setEditId(null);
     setForm(emptyProduct);
+    setCatEsOtro(false);
+    setMarcaText('');
     setModalOpen(true);
   }
 
@@ -64,6 +68,8 @@ export default function ProductosPage() {
         stock_minimo: prod.stock_minimo || 0,
         precio_venta: prod.precio_venta || '',
       });
+      setCatEsOtro(prod.categoria && !['Camas', 'Colchón', 'Almohadas'].includes(prod.categoria));
+      setMarcaText('');
       setModalOpen(true);
     } catch (err) { showToast(err.message, 'error'); }
   }
@@ -71,10 +77,15 @@ export default function ProductosPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
+        let marcaIdFinal = form.marca_id && !String(form.marca_id).startsWith('temp-') ? Number(form.marca_id) : undefined;
+        if (String(form.marca_id).startsWith('temp-') && marcaText) {
+          const created = await marcasAPI.create({ nombre: marcaText });
+          marcaIdFinal = created.id;
+        }
         const payload = {
           ...form,
+          marca_id: marcaIdFinal,
           costo: Number(form.costo),
-          marca_id: form.marca_id ? Number(form.marca_id) : undefined,
           stock: Number(form.stock),
           stock_minimo: Number(form.stock_minimo),
           precio_venta: form.precio_venta ? Number(form.precio_venta) : undefined,
@@ -209,8 +220,8 @@ export default function ProductosPage() {
               <select className="input-field"
                 value={['Camas', 'Colchón', 'Almohadas'].includes(form.categoria) ? form.categoria : 'otro'}
                 onChange={(e) => {
-                  if (e.target.value === 'otro') setForm({ ...form, categoria: '' });
-                  else setForm({ ...form, categoria: e.target.value });
+                  if (e.target.value === 'otro') { setCatEsOtro(true); setForm({ ...form, categoria: '' }); }
+                  else { setCatEsOtro(false); setForm({ ...form, categoria: e.target.value }); }
                 }}>
                 <option value="">Seleccionar...</option>
                 <option value="Camas">Camas</option>
@@ -218,7 +229,7 @@ export default function ProductosPage() {
                 <option value="Almohadas">Almohadas</option>
                 <option value="otro">Otro</option>
               </select>
-              {!['Camas', 'Colchón', 'Almohadas', ''].includes(form.categoria) && form.categoria && (
+              {catEsOtro && (
                 <input className="input-field mt-2" placeholder="Escribir categoría..."
                   value={form.categoria}
                   onChange={(e) => setForm({ ...form, categoria: e.target.value })} />
@@ -233,7 +244,8 @@ export default function ProductosPage() {
                 {form.categoria === 'Colchón'
                   ? marcasColchon.map(m => {
                       const found = marcas.find(mc => mc.nombre === m);
-                      return found ? <option key={found.id} value={found.id}>{found.nombre}</option> : null;
+                      const id = found ? found.id : `text-${m}`;
+                      return <option key={id} value={id}>{m}</option>;
                     })
                   : marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)
                 }
@@ -241,11 +253,10 @@ export default function ProductosPage() {
               </select>
               {form.marca_id === 'otro' && (
                 <input className="input-field mt-2" placeholder="Escribir marca..."
+                  value={marcaText}
                   onChange={(e) => {
-                    // Crear marca temporalmente
-                    const tempId = `temp-${Date.now()}`;
-                    setMarcas(prev => [...prev, { id: tempId, nombre: e.target.value }]);
-                    setForm({ ...form, marca_id: tempId });
+                    setMarcaText(e.target.value);
+                    setForm({ ...form, marca_id: `temp-${Date.now()}` });
                   }} />
               )}
             </div>
