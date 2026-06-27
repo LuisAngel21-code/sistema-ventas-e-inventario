@@ -40,6 +40,12 @@ async function seed() {
     [hashJorge]
   );
 
+  const hashAdmin2 = await bcrypt.hash('cams2026', 10);
+  await query(
+    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (NULL, 'admincamas@2.com', $1, 'admin')",
+    [hashAdmin2]
+  );
+
   await query(`INSERT INTO productos (codigo, nombre, descripcion, costo, precio_base, stock, stock_minimo, categoria) VALUES
     ('CAMA-001', 'Cama Queen Size Clásica', 'Cama queen size de madera sólida', 2500.00, 3500.00, 10, 2, 'Camas'),
     ('CAMA-002', 'Cama King Size Premium', 'Cama king size con cabecero tapizado', 4000.00, 5600.00, 5, 1, 'Camas'),

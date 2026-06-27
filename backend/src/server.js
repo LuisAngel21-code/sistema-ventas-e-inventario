@@ -45,6 +45,7 @@ app.use('/api/categorias', require('./routes/categorias'));
 app.use('/api/marcas', require('./routes/marcas'));
 app.use('/api/pagos', require('./routes/pagos'));
 app.use('/api/exportes', require('./routes/exportes'));
+app.use('/api/caja', require('./routes/caja'));
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
   const distPath = path.join(__dirname, '../../frontend/dist');

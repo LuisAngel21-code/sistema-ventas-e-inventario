@@ -143,6 +143,36 @@ async function initDatabase() {
     );
   `);
 
+  await query(`
+    CREATE TABLE IF NOT EXISTS caja_sesiones (
+      id SERIAL PRIMARY KEY,
+      fecha_apertura TIMESTAMP DEFAULT NOW(),
+      fecha_cierre TIMESTAMP,
+      saldo_inicial DECIMAL(10,2) DEFAULT 0,
+      saldo_final DECIMAL(10,2),
+      total_ingresos DECIMAL(10,2) DEFAULT 0,
+      total_egresos DECIMAL(10,2) DEFAULT 0,
+      estado VARCHAR(20) DEFAULT 'abierta' CHECK (estado IN ('abierta', 'cerrada')),
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS caja_movimientos (
+      id SERIAL PRIMARY KEY,
+      sesion_id INTEGER NOT NULL REFERENCES caja_sesiones(id) ON DELETE CASCADE,
+      fecha TIMESTAMP DEFAULT NOW(),
+      tipo VARCHAR(10) NOT NULL CHECK (tipo IN ('ingreso', 'egreso')),
+      tipo_pago VARCHAR(30) NOT NULL,
+      nro_comprobante VARCHAR(50),
+      descripcion TEXT,
+      monto DECIMAL(10,2) NOT NULL,
+      saldo_despues DECIMAL(10,2) NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await query(`CREATE INDEX IF NOT EXISTS idx_caja_sesion ON caja_movimientos(sesion_id);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_ventas_vendedor ON ventas(vendedor_id);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_ventas_fecha ON ventas(fecha);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_detalle_venta ON detalle_ventas(venta_id);`);

@@ -122,6 +122,15 @@ export const reportesAPI = {
   inventario: () => getDownloadUrl('/api/reportes/inventario'),
 };
 
+export const cajaAPI = {
+  sesionActual: () => request('/api/caja/sesion'),
+  abrir: (saldo_inicial = 0) => request('/api/caja/abrir', { method: 'POST', body: { saldo_inicial } }),
+  cerrar: () => request('/api/caja/cerrar', { method: 'POST' }),
+  movimientos: (sesion_id) => request(`/api/caja/movimientos${sesion_id ? '?sesion_id=' + sesion_id : ''}`),
+  registrar: (data) => request('/api/caja/movimientos', { method: 'POST', body: data }),
+  historial: (desde, hasta) => request(`/api/caja/historial?desde=${desde || ''}&hasta=${hasta || ''}`),
+};
+
 export const pagosAPI = {
   getAll: () => request('/api/pagos'),
   calcular: (inicio, fin) => request(`/api/pagos/calcular?semana_inicio=${inicio}&semana_fin=${fin}`, { method: 'POST' }),
