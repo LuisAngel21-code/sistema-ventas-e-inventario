@@ -14,7 +14,6 @@ import PagosPage from './pages/PagosPage';
 import CajaPage from './pages/CajaPage';
 import EntregasPage from './pages/EntregasPage';
 import AgendaPage from './pages/AgendaPage';
-import CuentasPage from './pages/CuentasPage';
 import TrabajadoresPage from './pages/TrabajadoresPage';
 
 function ProtectedRoute({ children }) {
@@ -60,7 +59,6 @@ function AppRoutes() {
         <Route path="/caja" element={<CajaPage />} />
         <Route path="/entregas" element={<EntregasPage />} />
         <Route path="/agenda" element={<AgendaPage />} />
-        <Route path="/cuentas" element={<CuentasPage />} />
         <Route path="/trabajadores" element={<TrabajadoresPage />} />
         <Route path="/pagos" element={<PagosPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

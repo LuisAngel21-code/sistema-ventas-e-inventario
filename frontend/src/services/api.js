@@ -139,13 +139,6 @@ export const agendaAPI = {
   remove: (id) => request(`/api/agenda/${id}`, { method: 'DELETE' }),
 };
 
-export const cuentasAPI = {
-  getAll: (params) => request(`/api/cuentas?${new URLSearchParams(params || {}).toString()}`),
-  create: (data) => request('/api/cuentas', { method: 'POST', body: data }),
-  pagarCuota: (id, data) => request(`/api/cuentas/${id}/pagar`, { method: 'POST', body: data }),
-  pagos: (id) => request(`/api/cuentas/${id}/pagos`),
-};
-
 export const trabajadoresAPI = {
   getAll: () => request('/api/trabajadores'),
   create: (data) => request('/api/trabajadores', { method: 'POST', body: data }),

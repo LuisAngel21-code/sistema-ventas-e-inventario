@@ -23,12 +23,8 @@ exports.getBalance = async (req, res) => {
       query("SELECT COALESCE(SUM(total_pago), 0) as total FROM pagos_vendedor WHERE estado = 'pagado' AND pagado_en >= $1 AND pagado_en <= $2", [desde, hasta]),
     ]);
 
-    const [{ rows: pagosProveedores }] = await Promise.all([
-      query("SELECT COALESCE(SUM(monto), 0) as total FROM pagos_cuenta WHERE fecha_pago >= $1 AND fecha_pago <= $2", [desde, hasta]),
-    ]);
-
     const totalIngresos = Number(ventas[0].total) + Number(ingresosCaja[0].total);
-    const totalEgresos = Number(comisiones[0].total) + Number(pagosProveedores[0].total) + Number(gastosCaja[0].total);
+    const totalEgresos = Number(comisiones[0].total) + Number(gastosCaja[0].total);
     const ganancia = totalIngresos - totalEgresos;
     const margen = totalIngresos > 0 ? Math.round((ganancia / totalIngresos) * 10000) / 100 : 0;
 
@@ -40,7 +36,6 @@ exports.getBalance = async (req, res) => {
       },
       egresos: {
         comisiones: Number(comisiones[0].total),
-        pagos_proveedores: Number(pagosProveedores[0].total),
         gastos_caja: Number(gastosCaja[0].total),
         total: totalEgresos,
       },
