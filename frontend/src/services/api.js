@@ -93,7 +93,7 @@ export const ventasAPI = {
       return data;
     });
   },
-  anular: (id) => request(`/api/ventas/${id}/anular`, { method: 'PUT' }),
+  remove: (id) => request(`/api/ventas/${id}`, { method: 'DELETE' }),
 };
 
 export const inventarioAPI = {

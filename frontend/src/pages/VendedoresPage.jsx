@@ -16,6 +16,7 @@ export default function VendedoresPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const { showToast } = useToast();
+  const [deleteId, setDeleteId] = useState(null);
   const [form, setForm] = useState(emptyVendedor);
 
   function load() {
@@ -56,9 +57,9 @@ export default function VendedoresPage() {
   }
 
   async function eliminar(id) {
-    if (!confirm('¿Eliminar vendedor?')) return;
     try {
       await vendedoresAPI.remove(id);
+      setDeleteId(null);
       showToast('Vendedor eliminado exitosamente', 'success');
       load();
     } catch (err) { showToast(err.message, 'error'); }
@@ -90,7 +91,7 @@ export default function VendedoresPage() {
                 </div>
                 <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button variant="ghost" size="sm" onClick={() => openEdit(v)}><Pencil className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="sm" onClick={() => eliminar(v.id)}><Trash2 className="w-3.5 h-3.5 text-red-400" /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => setDeleteId(v.id)}><Trash2 className="w-3.5 h-3.5 text-red-400" /></Button>
                 </div>
               </div>
               <div className="space-y-2 text-sm">
@@ -138,6 +139,14 @@ export default function VendedoresPage() {
             <Button type="submit">{editId ? 'Actualizar' : 'Crear Vendedor'}</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Vendedor">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar este vendedor? Esta acción no se puede deshacer.</p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
+          <Button variant="danger" onClick={() => eliminar(deleteId)}>Eliminar</Button>
+        </div>
       </Modal>
     </div>
   );

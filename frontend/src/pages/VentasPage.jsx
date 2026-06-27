@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ventasAPI, vendedoresAPI } from '../services/api';
-import { ShoppingCart, Plus, Search, RotateCcw, Calendar, User } from 'lucide-react';
+import { ShoppingCart, Plus, Search, Trash2, Calendar, User } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -34,12 +34,12 @@ export default function VentasPage() {
 
   useEffect(() => { load(); }, []);
 
-  async function anularVenta(id) {
+  async function eliminarVenta(id) {
     try {
-      await ventasAPI.anular(id);
+      await ventasAPI.remove(id);
       setVentas(ventas.filter(v => v.id !== id));
       setDeleteId(null);
-      showToast('Venta anulada. Stock restaurado.', 'success');
+      showToast('Venta eliminada. Stock restaurado.', 'success');
     } catch (err) { showToast(err.message, 'error'); }
   }
 
@@ -118,7 +118,7 @@ export default function VentasPage() {
                           <Button variant="ghost" size="sm">Ver</Button>
                         </Link>
                         <Button variant="ghost" size="sm" onClick={() => setDeleteId(v.id)}>
-                          <RotateCcw className="w-3.5 h-3.5 text-amber-500" />
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
                         </Button>
                       </div>
                     </td>
@@ -139,11 +139,11 @@ export default function VentasPage() {
       </div>
 
       {/* Delete modal */}
-      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Anular Venta">
-        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de anular esta venta? Se restaurará el stock de los productos.</p>
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Venta">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar esta venta? El stock se restaurará automáticamente.</p>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
-          <Button variant="danger" onClick={() => anularVenta(deleteId)}>Anular Venta</Button>
+          <Button variant="danger" onClick={() => eliminarVenta(deleteId)}>Eliminar</Button>
         </div>
       </Modal>
     </div>

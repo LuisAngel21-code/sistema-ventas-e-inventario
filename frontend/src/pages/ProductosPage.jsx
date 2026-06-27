@@ -21,6 +21,7 @@ export default function ProductosPage() {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(emptyProduct);
   const { showToast } = useToast();
+  const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState('');
 
   function load() {
@@ -80,9 +81,9 @@ export default function ProductosPage() {
   }
 
   async function eliminar(id) {
-    if (!confirm('¿Eliminar producto?')) return;
     try {
       await productosAPI.remove(id);
+      setDeleteId(null);
       showToast('Producto eliminado exitosamente', 'success');
       load();
     } catch (err) { showToast(err.message, 'error'); }
@@ -155,7 +156,7 @@ export default function ProductosPage() {
                         <Button variant="ghost" size="sm" onClick={() => openEdit(p.id)}>
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => eliminar(p.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(p.id)}>
                           <Trash2 className="w-3.5 h-3.5 text-red-400" />
                         </Button>
                       </div>
@@ -204,6 +205,14 @@ export default function ProductosPage() {
             <Button type="submit">{editId ? 'Actualizar' : 'Crear Producto'}</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Producto">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.</p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
+          <Button variant="danger" onClick={() => eliminar(deleteId)}>Eliminar</Button>
+        </div>
       </Modal>
     </div>
   );

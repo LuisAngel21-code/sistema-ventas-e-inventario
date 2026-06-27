@@ -8,6 +8,6 @@ router.post('/', upload.fields([
   { name: 'comprobante', maxCount: 1 },
   { name: 'voucher', maxCount: 1 },
 ]), controller.create);
-router.put('/:id/anular', controller.anular);
+router.delete('/:id', controller.remove);
 
 module.exports = router;
