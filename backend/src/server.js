@@ -50,6 +50,7 @@ app.use('/api/entregas', require('./routes/entregas'));
 app.use('/api/agenda', require('./routes/agenda'));
 app.use('/api/cuentas', require('./routes/cuentas'));
 app.use('/api/trabajadores', require('./routes/trabajadores'));
+app.use('/api/balance', require('./routes/balance'));
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
   const distPath = path.join(__dirname, '../../frontend/dist');

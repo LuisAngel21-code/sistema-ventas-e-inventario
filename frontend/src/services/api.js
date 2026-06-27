@@ -122,6 +122,10 @@ export const reportesAPI = {
   inventario: () => getDownloadUrl('/api/reportes/inventario'),
 };
 
+export const balanceAPI = {
+  get: (desde, hasta) => request(`/api/balance?desde=${desde}&hasta=${hasta}`),
+};
+
 export const entregasAPI = {
   getAll: (params) => request(`/api/entregas?${new URLSearchParams(params || {}).toString()}`),
   create: (data) => request('/api/entregas', { method: 'POST', body: data }),
