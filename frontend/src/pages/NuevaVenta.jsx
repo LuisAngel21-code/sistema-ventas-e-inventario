@@ -68,9 +68,7 @@ export default function NuevaVenta() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    alert('Formulario enviado');
-    console.log('handleSubmit ejecutado', { vendedorId, items, nroComprobante, comprobanteFile, metodoPago, voucherFile });
-    if (!vendedorId) return showToast('Seleccione un vendedor', 'warning');
+        if (!vendedorId) return showToast('Seleccione un vendedor', 'warning');
     if (items.some(i => !i.producto_id)) return showToast('Complete todos los productos', 'warning');
     if (!nroComprobante) return showToast('Nro. de comprobante requerido', 'warning');
     if (!comprobanteFile) return showToast('Foto del comprobante requerida', 'warning');
@@ -120,7 +118,7 @@ export default function NuevaVenta() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <div className="card-page p-5 space-y-4">
           <h3 className="text-sm font-display font-semibold text-gray-900">Información de pago</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
