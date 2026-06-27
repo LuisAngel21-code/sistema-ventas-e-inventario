@@ -140,6 +140,15 @@ async function initDatabase() {
 
   await query(`
     DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='productos' AND column_name='proveedor') THEN
+        ALTER TABLE productos ADD COLUMN proveedor VARCHAR(200);
+        ALTER TABLE productos ADD COLUMN tipo VARCHAR(50);
+      END IF;
+    END $$;
+  `);
+
+  await query(`
+    DO $$ BEGIN
       IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='ventas' AND column_name='tipo_comprobante') THEN
         ALTER TABLE ventas ADD COLUMN tipo_comprobante VARCHAR(20) NOT NULL DEFAULT 'boleta';
         ALTER TABLE ventas ADD COLUMN metodo_pago VARCHAR(30) NOT NULL DEFAULT 'efectivo';

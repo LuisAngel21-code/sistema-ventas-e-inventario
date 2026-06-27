@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { productosAPI } from '../services/api';
-import { Package, Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { productosAPI, marcasAPI } from '../services/api';
+import { Package, Plus, Pencil, Trash2, Search, BadgeHelp } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -11,6 +11,7 @@ import { useToast } from '../context/ToastContext';
 
 const emptyProduct = {
   codigo: '', nombre: '', descripcion: '', costo: '', categoria: '',
+  marca_id: '', proveedor: '', tipo: '',
   stock: 0, stock_minimo: 0, precio_venta: '',
 };
 
@@ -20,16 +21,21 @@ export default function ProductosPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(emptyProduct);
+  const [marcas, setMarcas] = useState([]);
   const { showToast } = useToast();
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState('');
 
   function load() {
     setLoading(true);
-    productosAPI.getAll(true)
-      .then(setProductos)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    Promise.all([
+      productosAPI.getAll(true),
+      marcasAPI.getAll(),
+    ]).then(([prods, mar]) => {
+      setProductos(prods);
+      setMarcas(mar);
+    }).catch(console.error)
+    .finally(() => setLoading(false));
   }
 
   useEffect(() => { load(); }, []);
@@ -50,6 +56,9 @@ export default function ProductosPage() {
         descripcion: prod.descripcion || '',
         costo: prod.costo || '',
         categoria: prod.categoria || '',
+        marca_id: prod.marca_id || '',
+        proveedor: prod.proveedor || '',
+        tipo: prod.tipo || '',
         stock: prod.stock || 0,
         stock_minimo: prod.stock_minimo || 0,
         precio_venta: prod.precio_venta || '',
@@ -61,13 +70,14 @@ export default function ProductosPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const payload = {
-        ...form,
-        costo: Number(form.costo),
-        stock: Number(form.stock),
-        stock_minimo: Number(form.stock_minimo),
-        precio_venta: form.precio_venta ? Number(form.precio_venta) : undefined,
-      };
+        const payload = {
+          ...form,
+          costo: Number(form.costo),
+          marca_id: form.marca_id ? Number(form.marca_id) : undefined,
+          stock: Number(form.stock),
+          stock_minimo: Number(form.stock_minimo),
+          precio_venta: form.precio_venta ? Number(form.precio_venta) : undefined,
+        };
 
       if (editId) {
         await productosAPI.update(editId, payload);
@@ -126,8 +136,10 @@ export default function ProductosPage() {
                   <th className="table-header">Código</th>
                   <th className="table-header">Nombre</th>
                   <th className="table-header">Categoría</th>
+                  <th className="table-header">Marca</th>
+                  <th className="table-header">Proveedor</th>
                   <th className="table-header text-right">Costo</th>
-                  <th className="table-header text-right">Precio Base</th>
+                  <th className="table-header text-right">P. Base</th>
                   <th className="table-header text-right">Stock</th>
                   <th className="table-header text-center">Estado</th>
                   <th className="table-header text-right">Acciones</th>
@@ -139,6 +151,8 @@ export default function ProductosPage() {
                     <td className="table-cell font-mono text-xs text-gray-500">{p.codigo}</td>
                     <td className="table-cell font-medium text-gray-900">{p.nombre}</td>
                     <td className="table-cell text-gray-500">{p.categoria || '—'}</td>
+                    <td className="table-cell text-gray-500">{p.marca_id ? marcas.find(m => m.id === p.marca_id)?.nombre || '—' : '—'}</td>
+                    <td className="table-cell text-gray-500">{p.proveedor || '—'}</td>
                     <td className="table-cell text-right text-gray-500">S/ {Number(p.costo).toFixed(2)}</td>
                     <td className="table-cell text-right font-medium">S/ {Number(p.precio_base).toFixed(2)}</td>
                     <td className="table-cell text-right font-semibold">{p.stock}</td>
@@ -165,7 +179,7 @@ export default function ProductosPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-gray-400">
+                    <td colSpan={10} className="text-center py-12 text-gray-400">
                       <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       No hay productos
                     </td>
@@ -184,6 +198,35 @@ export default function ProductosPage() {
             <Input label="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
+            <Input label="Categoría" value={form.categoria}
+              onChange={(e) => setForm({ ...form, categoria: e.target.value })} />
+            <div className="space-y-1.5">
+              <label className="input-label">Marca</label>
+              <select className="input-field" value={form.marca_id}
+                onChange={(e) => setForm({ ...form, marca_id: e.target.value })}>
+                <option value="">Sin marca</option>
+                {marcas.map(m => (
+                  <option key={m.id} value={m.id}>{m.nombre}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Proveedor" value={form.proveedor}
+              onChange={(e) => setForm({ ...form, proveedor: e.target.value })} />
+            {form.categoria?.toLowerCase() === 'camas' && (
+              <div className="space-y-1.5">
+                <label className="input-label">Tipo</label>
+                <select className="input-field" value={form.tipo}
+                  onChange={(e) => setForm({ ...form, tipo: e.target.value })}>
+                  <option value="">Seleccionar...</option>
+                  <option value="madera">Madera</option>
+                  <option value="tapizada">Tapizada</option>
+                </select>
+              </div>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <Input label="Costo (S/)" type="number" step="0.01" value={form.costo}
               onChange={(e) => {
                 const costo = Number(e.target.value);
@@ -192,7 +235,6 @@ export default function ProductosPage() {
             <Input label="Precio Base (costo + 40%)" type="number" step="0.01" value={form.precio_venta}
               onChange={(e) => setForm({ ...form, precio_venta: e.target.value })} />
           </div>
-          <Input label="Categoría" value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} />
           <Input label="Descripción" value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
           <div className="grid grid-cols-2 gap-4">
             <Input label="Stock Inicial" type="number" min="0" value={form.stock}
