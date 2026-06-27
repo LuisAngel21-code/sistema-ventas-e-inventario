@@ -107,6 +107,27 @@ async function initDatabase() {
   `);
 
   await query(`
+    CREATE TABLE IF NOT EXISTS compras (
+      id SERIAL PRIMARY KEY,
+      proveedor VARCHAR(200),
+      fecha TIMESTAMP DEFAULT NOW(),
+      total DECIMAL(10,2) DEFAULT 0.00,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS detalle_compras (
+      id SERIAL PRIMARY KEY,
+      compra_id INTEGER NOT NULL REFERENCES compras(id) ON DELETE CASCADE,
+      producto_id INTEGER NOT NULL REFERENCES productos(id) ON DELETE RESTRICT,
+      cantidad INTEGER NOT NULL,
+      costo_unitario DECIMAL(10,2) NOT NULL,
+      subtotal DECIMAL(10,2) NOT NULL
+    );
+  `);
+
+  await query(`
     CREATE TABLE IF NOT EXISTS pagos_vendedor (
       id SERIAL PRIMARY KEY,
       vendedor_id INTEGER NOT NULL REFERENCES vendedores(id) ON DELETE RESTRICT,
