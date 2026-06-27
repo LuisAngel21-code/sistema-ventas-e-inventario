@@ -68,27 +68,29 @@ export default function Dashboard() {
               onChange={(e) => setFiltros({ ...filtros, hasta: e.target.value })} />
           </div>
           <Button onClick={load} icon={Calendar}>Filtrar</Button>
-          <Button variant="secondary" onClick={() => window.open(getDownloadUrl(`/api/balance/pdf?desde=${filtros.desde}&hasta=${filtros.hasta}&alquiler=${alquiler}`), '_blank')} icon={FileText}>
-            PDF
-          </Button>
-          <div className="flex items-center gap-3 border-l border-gray-200 pl-4 ml-2">
-            <Home className="w-5 h-5 text-primary-500" />
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-400 leading-tight">Ingresar monto de alquiler</span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <div className="relative">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400">S/</span>
-                  <input type="number" step="0.01" className="input-field pl-7 w-28 text-sm py-1"
-                    value={alquiler} onChange={(e) => setAlquiler(e.target.value)}
-                    placeholder="0.00" />
+          <div className="flex items-center gap-3 ml-auto">
+            <Button variant="secondary" onClick={() => window.open(getDownloadUrl(`/api/balance/pdf?desde=${filtros.desde}&hasta=${filtros.hasta}&alquiler=${alquiler}`), '_blank')} icon={FileText}>
+              PDF
+            </Button>
+            <div className="flex items-center gap-3 border-l border-gray-200 pl-3">
+              <Home className="w-5 h-5 text-primary-500" />
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-400 leading-tight">Ingresar monto de alquiler</span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400">S/</span>
+                    <input type="number" step="0.01" className="input-field pl-7 w-28 text-sm py-1"
+                      value={alquiler} onChange={(e) => setAlquiler(e.target.value)}
+                      placeholder="0.00" />
+                  </div>
+                  <button onClick={guardarAlquiler} disabled={guardando}
+                    className="px-3 py-1 bg-primary-700 text-white text-xs rounded-lg hover:bg-primary-800 transition-colors whitespace-nowrap">
+                    {guardando ? '...' : 'Guardar'}
+                  </button>
+                  {Number(alquiler) > 0 && (
+                    <span className="text-xs text-gray-400 ml-1">Alquiler: S/ {Number(alquiler).toFixed(2)}</span>
+                  )}
                 </div>
-                <button onClick={guardarAlquiler} disabled={guardando}
-                  className="px-3 py-1 bg-primary-700 text-white text-xs rounded-lg hover:bg-primary-800 transition-colors whitespace-nowrap">
-                  {guardando ? '...' : 'Guardar'}
-                </button>
-                {Number(alquiler) > 0 && (
-                  <span className="text-xs text-gray-400 ml-1">Alquiler: S/ {Number(alquiler).toFixed(2)}</span>
-                )}
               </div>
             </div>
           </div>
