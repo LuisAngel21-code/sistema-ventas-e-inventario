@@ -60,33 +60,28 @@ export default function VentasPage() {
 
       {/* Filters */}
       <div className="card-page p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
+        <div className="flex gap-3 items-end flex-wrap">
+          <div className="w-48">
             <label className="input-label">Vendedor</label>
-            <select
-              className="input-field"
-              value={filtros.vendedor_id}
-              onChange={(e) => setFiltros({ ...filtros, vendedor_id: e.target.value })}
-            >
+            <select className="input-field" value={filtros.vendedor_id}
+              onChange={(e) => setFiltros({ ...filtros, vendedor_id: e.target.value })}>
               <option value="">Todos</option>
               {vendedores.map(v => (
                 <option key={v.id} value={v.id}>{v.nombre} {v.apellido}</option>
               ))}
             </select>
           </div>
-          <div>
+          <div className="w-40">
             <label className="input-label">Desde</label>
             <input type="date" className="input-field" value={filtros.desde}
               onChange={(e) => setFiltros({ ...filtros, desde: e.target.value })} />
           </div>
-          <div>
+          <div className="w-40">
             <label className="input-label">Hasta</label>
             <input type="date" className="input-field" value={filtros.hasta}
               onChange={(e) => setFiltros({ ...filtros, hasta: e.target.value })} />
           </div>
-          <div className="flex items-end">
-            <Button onClick={load} icon={Search} className="w-full">Filtrar</Button>
-          </div>
+          <Button onClick={load} icon={Search}>Filtrar</Button>
         </div>
       </div>
 
