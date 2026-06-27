@@ -126,6 +126,11 @@ export const balanceAPI = {
   get: (desde, hasta) => request(`/api/balance?desde=${desde}&hasta=${hasta}`),
 };
 
+export const configAPI = {
+  get: (clave) => request(`/api/config/${clave}`),
+  set: (clave, valor) => request(`/api/config/${clave}`, { method: 'PUT', body: { valor } }),
+};
+
 export const entregasAPI = {
   getAll: (params) => request(`/api/entregas?${new URLSearchParams(params || {}).toString()}`),
   create: (data) => request('/api/entregas', { method: 'POST', body: data }),

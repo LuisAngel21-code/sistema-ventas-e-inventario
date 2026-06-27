@@ -280,6 +280,15 @@ async function initDatabase() {
     END $$;
   `);
 
+  await query(`
+    CREATE TABLE IF NOT EXISTS configuracion (
+      id SERIAL PRIMARY KEY,
+      clave VARCHAR(100) UNIQUE NOT NULL,
+      valor VARCHAR(255),
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
   await query(`CREATE INDEX IF NOT EXISTS idx_pagos_trabajador ON pagos_trabajadores(trabajador_id);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_entregas_fecha ON entregas(fecha_entrega);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_agenda_fecha ON agenda(fecha);`);

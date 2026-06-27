@@ -15,10 +15,6 @@ exports.getBalance = async (req, res) => {
       query("SELECT COALESCE(SUM(cm.monto), 0) as total FROM caja_movimientos cm JOIN caja_sesiones cs ON cm.sesion_id = cs.id WHERE cm.tipo = 'ingreso' AND cs.fecha_apertura >= $1 AND cs.fecha_apertura <= $2", [desde, hasta]),
     ]);
 
-    const [{ rows: gastosCaja }] = await Promise.all([
-      query("SELECT COALESCE(SUM(cm.monto), 0) as total FROM caja_movimientos cm JOIN caja_sesiones cs ON cm.sesion_id = cs.id WHERE cm.tipo = 'egreso' AND cs.fecha_apertura >= $1 AND cs.fecha_apertura <= $2", [desde, hasta]),
-    ]);
-
     const [{ rows: comisiones }] = await Promise.all([
       query("SELECT COALESCE(SUM(total_pago), 0) as total FROM pagos_vendedor WHERE estado = 'pagado' AND pagado_en >= $1 AND pagado_en <= $2", [desde, hasta]),
     ]);
