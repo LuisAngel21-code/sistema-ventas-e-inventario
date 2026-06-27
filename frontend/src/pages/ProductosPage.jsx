@@ -201,8 +201,26 @@ export default function ProductosPage() {
             <Input label="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Categoría" value={form.categoria}
-              onChange={(e) => setForm({ ...form, categoria: e.target.value })} />
+            <div className="space-y-1.5">
+              <label className="input-label">Categoría</label>
+              <select className="input-field"
+                value={['Camas', 'Colchón', 'Almohadas'].includes(form.categoria) ? form.categoria : 'otro'}
+                onChange={(e) => {
+                  if (e.target.value === 'otro') setForm({ ...form, categoria: '' });
+                  else setForm({ ...form, categoria: e.target.value });
+                }}>
+                <option value="">Seleccionar...</option>
+                <option value="Camas">Camas</option>
+                <option value="Colchón">Colchón</option>
+                <option value="Almohadas">Almohadas</option>
+                <option value="otro">Otro</option>
+              </select>
+              {!['Camas', 'Colchón', 'Almohadas', ''].includes(form.categoria) && form.categoria && (
+                <input className="input-field mt-2" placeholder="Escribir categoría..."
+                  value={form.categoria}
+                  onChange={(e) => setForm({ ...form, categoria: e.target.value })} />
+              )}
+            </div>
             <div className="space-y-1.5">
               <label className="input-label">Marca</label>
               <select className="input-field" value={form.marca_id}
