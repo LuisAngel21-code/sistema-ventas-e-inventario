@@ -123,11 +123,12 @@ export default function CajaPage() {
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button className="flex-1" onClick={() => abrirModal('ingreso')} icon={Plus}>
+            <Button className="flex-1" onClick={() => abrirModal('ingreso')} icon={Plus}
+              style={{ backgroundColor: '#4F80A8' }}>
               Ingreso
             </Button>
             <Button className="flex-1" onClick={() => abrirModal('egreso')} icon={Minus}
-              style={{ backgroundColor: '#d97706' }}>
+              style={{ backgroundColor: '#446E91' }}>
               Egreso
             </Button>
           </div>
