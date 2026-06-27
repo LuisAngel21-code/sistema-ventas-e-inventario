@@ -172,7 +172,100 @@ async function initDatabase() {
     );
   `);
 
+  await query(`
+    CREATE TABLE IF NOT EXISTS entregas (
+      id SERIAL PRIMARY KEY,
+      venta_id INTEGER REFERENCES ventas(id) ON DELETE SET NULL,
+      cliente VARCHAR(200),
+      direccion TEXT NOT NULL,
+      distrito VARCHAR(100),
+      referencia TEXT,
+      fecha_entrega DATE NOT NULL,
+      hora_programada TIME,
+      telefono VARCHAR(20),
+      producto VARCHAR(200),
+      observaciones TEXT,
+      estado VARCHAR(30) DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'en_ruta', 'entregado', 'cancelado')),
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS agenda (
+      id SERIAL PRIMARY KEY,
+      titulo VARCHAR(200) NOT NULL,
+      fecha DATE NOT NULL,
+      hora TIME,
+      descripcion TEXT,
+      tipo VARCHAR(30) DEFAULT 'recordatorio' CHECK (tipo IN ('recordatorio', 'cita', 'pago', 'entrega')),
+      completado BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS cuentas_pagar (
+      id SERIAL PRIMARY KEY,
+      proveedor VARCHAR(200) NOT NULL,
+      concepto VARCHAR(200) NOT NULL,
+      monto_total DECIMAL(10,2) NOT NULL,
+      cuotas INTEGER DEFAULT 1,
+      monto_cuota DECIMAL(10,2) NOT NULL,
+      cuotas_pagadas INTEGER DEFAULT 0,
+      fecha_inicio DATE NOT NULL,
+      fecha_fin DATE,
+      periodicidad VARCHAR(20) DEFAULT 'semanal' CHECK (periodicidad IN ('semanal', 'quincenal', 'mensual')),
+      estado VARCHAR(20) DEFAULT 'activa' CHECK (estado IN ('activa', 'pagada', 'cancelada')),
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS pagos_cuenta (
+      id SERIAL PRIMARY KEY,
+      cuenta_id INTEGER NOT NULL REFERENCES cuentas_pagar(id) ON DELETE CASCADE,
+      nro_cuota INTEGER NOT NULL,
+      monto DECIMAL(10,2) NOT NULL,
+      metodo_pago VARCHAR(30),
+      observaciones TEXT,
+      fecha_pago TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS trabajadores (
+      id SERIAL PRIMARY KEY,
+      nombre VARCHAR(100) NOT NULL,
+      apellido VARCHAR(100) NOT NULL,
+      tipo VARCHAR(30) NOT NULL CHECK (tipo IN ('vendedor', 'destajista', 'jornalero')),
+      telefono VARCHAR(20),
+      email VARCHAR(150),
+      sueldo_semanal DECIMAL(10,2) DEFAULT 0,
+      tarifa_por_unidad DECIMAL(10,2) DEFAULT 0,
+      activo BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS pagos_trabajadores (
+      id SERIAL PRIMARY KEY,
+      trabajador_id INTEGER NOT NULL REFERENCES trabajadores(id),
+      semana_inicio DATE NOT NULL,
+      semana_fin DATE NOT NULL,
+      tipo_pago VARCHAR(30) NOT NULL,
+      unidades INTEGER DEFAULT 0,
+      total_pagar DECIMAL(10,2) NOT NULL,
+      estado VARCHAR(20) DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'pagado')),
+      pagado_en TIMESTAMP,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
   await query(`CREATE INDEX IF NOT EXISTS idx_caja_sesion ON caja_movimientos(sesion_id);`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_pagos_trabajador ON pagos_trabajadores(trabajador_id);`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_entregas_fecha ON entregas(fecha_entrega);`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_agenda_fecha ON agenda(fecha);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_ventas_vendedor ON ventas(vendedor_id);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_ventas_fecha ON ventas(fecha);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_detalle_venta ON detalle_ventas(venta_id);`);

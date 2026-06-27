@@ -122,6 +122,36 @@ export const reportesAPI = {
   inventario: () => getDownloadUrl('/api/reportes/inventario'),
 };
 
+export const entregasAPI = {
+  getAll: (params) => request(`/api/entregas?${new URLSearchParams(params || {}).toString()}`),
+  create: (data) => request('/api/entregas', { method: 'POST', body: data }),
+  updateEstado: (id, estado) => request(`/api/entregas/${id}/estado`, { method: 'PUT', body: { estado } }),
+};
+
+export const agendaAPI = {
+  getAll: (params) => request(`/api/agenda?${new URLSearchParams(params || {}).toString()}`),
+  create: (data) => request('/api/agenda', { method: 'POST', body: data }),
+  update: (id, data) => request(`/api/agenda/${id}`, { method: 'PUT', body: data }),
+  remove: (id) => request(`/api/agenda/${id}`, { method: 'DELETE' }),
+};
+
+export const cuentasAPI = {
+  getAll: (params) => request(`/api/cuentas?${new URLSearchParams(params || {}).toString()}`),
+  create: (data) => request('/api/cuentas', { method: 'POST', body: data }),
+  pagarCuota: (id, data) => request(`/api/cuentas/${id}/pagar`, { method: 'POST', body: data }),
+  pagos: (id) => request(`/api/cuentas/${id}/pagos`),
+};
+
+export const trabajadoresAPI = {
+  getAll: () => request('/api/trabajadores'),
+  create: (data) => request('/api/trabajadores', { method: 'POST', body: data }),
+  update: (id, data) => request(`/api/trabajadores/${id}`, { method: 'PUT', body: data }),
+  remove: (id) => request(`/api/trabajadores/${id}`, { method: 'DELETE' }),
+  calcularPago: (data) => request('/api/trabajadores/calcular-pago', { method: 'POST', body: data }),
+  pagos: (params) => request(`/api/trabajadores/pagos?${new URLSearchParams(params || {}).toString()}`),
+  marcarPagado: (id) => request(`/api/trabajadores/pagos/${id}/pagar`, { method: 'PUT' }),
+};
+
 export const cajaAPI = {
   sesionActual: () => request('/api/caja/sesion'),
   abrir: (saldo_inicial = 0) => request('/api/caja/abrir', { method: 'POST', body: { saldo_inicial } }),

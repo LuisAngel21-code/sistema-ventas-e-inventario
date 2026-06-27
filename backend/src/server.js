@@ -46,6 +46,10 @@ app.use('/api/marcas', require('./routes/marcas'));
 app.use('/api/pagos', require('./routes/pagos'));
 app.use('/api/exportes', require('./routes/exportes'));
 app.use('/api/caja', require('./routes/caja'));
+app.use('/api/entregas', require('./routes/entregas'));
+app.use('/api/agenda', require('./routes/agenda'));
+app.use('/api/cuentas', require('./routes/cuentas'));
+app.use('/api/trabajadores', require('./routes/trabajadores'));
   app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
   const distPath = path.join(__dirname, '../../frontend/dist');
