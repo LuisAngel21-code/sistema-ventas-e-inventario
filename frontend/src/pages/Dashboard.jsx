@@ -71,14 +71,18 @@ export default function Dashboard() {
           <Button variant="secondary" onClick={() => window.open(getDownloadUrl(`/api/balance/pdf?desde=${filtros.desde}&hasta=${filtros.hasta}&alquiler=${alquiler}`), '_blank')} icon={FileText}>
             PDF
           </Button>
-          <div className="flex gap-1 items-center">
+          <div className="flex items-center gap-2 border-l border-gray-200 pl-4 ml-2">
             <Home className="w-4 h-4 text-primary-500" />
-            <input type="number" step="0.01" className="input-field w-20 text-sm py-1.5"
-              value={alquiler} onChange={(e) => setAlquiler(e.target.value)}
-              title="Pago mensual tienda" />
+            <span className="text-xs text-gray-500 font-medium">Alquiler</span>
+            <div className="relative">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400">S/</span>
+              <input type="number" step="0.01" className="input-field pl-7 w-24 text-sm py-1.5"
+                value={alquiler} onChange={(e) => setAlquiler(e.target.value)}
+                placeholder="0" />
+            </div>
             <button onClick={guardarAlquiler} disabled={guardando}
-              className="p-1.5 text-primary-600 hover:text-primary-700 transition-colors"
-              title="Guardar pago mensual">
+              className="p-1.5 bg-primary-50 text-primary-600 hover:bg-primary-100 rounded-lg transition-colors"
+              title="Guardar alquiler">
               <Save className="w-4 h-4" />
             </button>
           </div>
