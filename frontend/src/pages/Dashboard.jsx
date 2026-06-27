@@ -72,7 +72,7 @@ export default function Dashboard() {
             <Button variant="secondary" onClick={() => window.open(getDownloadUrl(`/api/balance/pdf?desde=${filtros.desde}&hasta=${filtros.hasta}&alquiler=${alquiler}`), '_blank')} icon={FileText}>
               PDF
             </Button>
-            <div className="flex items-center gap-3 border-l border-gray-200 pl-3">
+            <div className="flex items-center gap-3">
               <Home className="w-5 h-5 text-primary-500" />
               <div className="flex flex-col">
                 <span className="text-xs text-gray-400 leading-tight">Ingresar monto de alquiler</span>

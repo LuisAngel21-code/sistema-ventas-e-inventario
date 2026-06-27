@@ -83,7 +83,7 @@ export default function CajaPage() {
         </div>
         {sesion ? (
           <Button onClick={cerrarCaja} icon={Lock}
-            style={{ backgroundColor: '#A83723' }}>Cerrar Caja</Button>
+            style={{ backgroundColor: '#475569' }}>Cerrar Caja</Button>
         ) : (
           <Button onClick={abrirCaja} icon={Unlock}>Abrir Caja</Button>
         )}
