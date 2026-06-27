@@ -50,14 +50,17 @@ export default function VentasPage() {
           <h1 className="page-title">Ventas</h1>
           <p className="page-subtitle">Gestión de ventas registradas</p>
         </div>
-        <Link to="/ventas/nueva">
-          <Button icon={Plus}>Nueva Venta</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => window.open(getDownloadUrl('/api/exportes/ventas'), '_blank')} icon={FileSpreadsheet}>Excel</Button>
+          <Link to="/ventas/nueva">
+            <Button icon={Plus}>Nueva Venta</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
       <div className="card-page p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="input-label">Vendedor</label>
             <select
@@ -83,11 +86,6 @@ export default function VentasPage() {
           </div>
           <div className="flex items-end">
             <Button onClick={load} icon={Search} className="w-full">Filtrar</Button>
-          </div>
-          <div className="flex items-end">
-            <Button variant="secondary" onClick={() => window.open(getDownloadUrl('/api/exportes/ventas'), '_blank')} icon={FileSpreadsheet} className="w-full">
-              Excel
-            </Button>
           </div>
         </div>
       </div>

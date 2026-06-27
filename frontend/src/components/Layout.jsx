@@ -3,14 +3,13 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, ShoppingCart, Package, Warehouse,
-  Users, FileBarChart, PlusCircle, LogOut, Menu, X,
+  Users, FileBarChart, LogOut, Menu, X,
   ChevronRight, Store, UserCircle, DollarSign,
 } from 'lucide-react';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/ventas', label: 'Ventas', icon: ShoppingCart },
-  { path: '/ventas/nueva', label: 'Nueva Venta', icon: PlusCircle },
   { path: '/productos', label: 'Productos', icon: Package },
   { path: '/inventario', label: 'Inventario', icon: Warehouse },
   { path: '/vendedores', label: 'Vendedores', icon: Users },
