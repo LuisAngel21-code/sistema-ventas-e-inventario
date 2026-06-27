@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, ShoppingCart, Package, Warehouse,
   Users, FileBarChart, PlusCircle, LogOut, Menu, X,
-  ChevronRight, Store, UserCircle,
+  ChevronRight, Store, UserCircle, DollarSign,
 } from 'lucide-react';
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { path: '/inventario', label: 'Inventario', icon: Warehouse },
   { path: '/vendedores', label: 'Vendedores', icon: Users },
   { path: '/reportes', label: 'Reportes', icon: FileBarChart },
+  { path: '/pagos', label: 'Pagos', icon: DollarSign },
 ];
 
 export default function Layout() {

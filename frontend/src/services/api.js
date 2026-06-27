@@ -121,6 +121,12 @@ export const reportesAPI = {
   inventario: () => getDownloadUrl('/api/reportes/inventario'),
 };
 
+export const pagosAPI = {
+  getAll: () => request('/api/pagos'),
+  calcular: (inicio, fin) => request(`/api/pagos/calcular?semana_inicio=${inicio}&semana_fin=${fin}`, { method: 'POST' }),
+  marcarPagado: (id) => request(`/api/pagos/${id}/pagar`, { method: 'PUT' }),
+};
+
 export const categoriasAPI = {
   getAll: () => request('/api/categorias'),
   create: (data) => request('/api/categorias', { method: 'POST', body: data }),
