@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { balanceAPI, configAPI } from '../services/api';
-import { TrendingUp, TrendingDown, DollarSign, Receipt, ShoppingCart, Calendar, Home, Save } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Receipt, ShoppingCart, Calendar, Home, Save, FileText } from 'lucide-react';
+import { getDownloadUrl } from '../services/api';
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
 import { useToast } from '../context/ToastContext';
@@ -67,28 +68,19 @@ export default function Dashboard() {
               onChange={(e) => setFiltros({ ...filtros, hasta: e.target.value })} />
           </div>
           <Button onClick={load} icon={Calendar}>Filtrar</Button>
-        </div>
-      </div>
-
-      {/* Card Alquiler */}
-      <div className="stat-card p-5">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">
-              <Home className="w-5 h-5 text-primary-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-900">Pago Mensual Tienda</p>
-              <p className="text-xs text-gray-500">Alquiler, agua, luz</p>
-            </div>
-          </div>
-          <div className="flex gap-2 items-center">
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">S/</span>
-              <input type="number" step="0.01" className="input-field pl-8 w-36"
-                value={alquiler} onChange={(e) => setAlquiler(e.target.value)} />
-            </div>
-            <Button onClick={guardarAlquiler} loading={guardando} icon={Save} size="sm">Guardar</Button>
+          <Button variant="secondary" onClick={() => window.open(getDownloadUrl(`/api/balance/pdf?desde=${filtros.desde}&hasta=${filtros.hasta}&alquiler=${alquiler}`), '_blank')} icon={FileText}>
+            PDF
+          </Button>
+          <div className="flex gap-1 items-center">
+            <Home className="w-4 h-4 text-primary-500" />
+            <input type="number" step="0.01" className="input-field w-20 text-sm py-1.5"
+              value={alquiler} onChange={(e) => setAlquiler(e.target.value)}
+              title="Pago mensual tienda" />
+            <button onClick={guardarAlquiler} disabled={guardando}
+              className="p-1.5 text-primary-600 hover:text-primary-700 transition-colors"
+              title="Guardar pago mensual">
+              <Save className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
