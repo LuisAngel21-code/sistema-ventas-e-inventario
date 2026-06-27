@@ -23,8 +23,17 @@ exports.getBalance = async (req, res) => {
       query("SELECT COALESCE(SUM(total_pago), 0) as total FROM pagos_vendedor WHERE estado = 'pagado' AND pagado_en >= $1 AND pagado_en <= $2", [desde, hasta]),
     ]);
 
+    const [{ rows: retiros }] = await Promise.all([
+      query("SELECT COALESCE(SUM(cm.monto), 0) as total FROM caja_movimientos cm JOIN caja_sesiones cs ON cm.sesion_id = cs.id WHERE cm.tipo = 'egreso' AND cm.categoria = 'retiro' AND cs.fecha_apertura >= $1 AND cs.fecha_apertura <= $2", [desde, hasta]),
+    ]);
+
+    const [{ rows: gastosReales }] = await Promise.all([
+      query("SELECT COALESCE(SUM(cm.monto), 0) as total FROM caja_movimientos cm JOIN caja_sesiones cs ON cm.sesion_id = cs.id WHERE cm.tipo = 'egreso' AND (cm.categoria IS NULL OR cm.categoria = 'gasto') AND cs.fecha_apertura >= $1 AND cs.fecha_apertura <= $2", [desde, hasta]),
+    ]);
+
     const totalIngresos = Number(ventas[0].total) + Number(ingresosCaja[0].total);
-    const totalEgresos = Number(comisiones[0].total) + Number(gastosCaja[0].total);
+    const totalEgresos = Number(comisiones[0].total) + Number(gastosReales[0].total);
+    const totalRetiros = Number(retiros[0].total);
     const ganancia = totalIngresos - totalEgresos;
     const margen = totalIngresos > 0 ? Math.round((ganancia / totalIngresos) * 10000) / 100 : 0;
 
@@ -36,9 +45,10 @@ exports.getBalance = async (req, res) => {
       },
       egresos: {
         comisiones: Number(comisiones[0].total),
-        gastos_caja: Number(gastosCaja[0].total),
+        gastos_caja: Number(gastosReales[0].total),
         total: totalEgresos,
       },
+      retiros: totalRetiros,
       resultado: {
         ganancia,
         margen,

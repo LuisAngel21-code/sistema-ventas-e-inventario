@@ -115,8 +115,8 @@ export default function Dashboard() {
                   <span className="font-semibold">S/ {balance.egresos.comisiones.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 flex items-center gap-2"><Building2 className="w-4 h-4" /> Pagos proveedores</span>
-                  <span className="font-semibold">S/ {balance.egresos.pagos_proveedores.toFixed(2)}</span>
+                  <span className="text-gray-600">Gastos de caja</span>
+                  <span className="font-semibold">S/ {balance.egresos.gastos_caja.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Gastos de caja</span>
@@ -126,6 +126,12 @@ export default function Dashboard() {
                   <span>Total Egresos</span>
                   <span>S/ {balance.egresos.total.toFixed(2)}</span>
                 </div>
+                {balance.retiros > 0 && (
+                  <div className="border-t border-gray-100 pt-2 mt-2 flex justify-between text-sm">
+                    <span className="text-gray-500 flex items-center gap-2">💸 Retiros del dueño</span>
+                    <span className="text-amber-600 font-semibold">S/ {balance.retiros.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

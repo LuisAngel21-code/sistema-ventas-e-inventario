@@ -75,7 +75,7 @@ exports.movimientos = async (req, res) => {
 
 exports.registrar = async (req, res) => {
   try {
-    const { tipo, tipo_pago, nro_comprobante, descripcion, monto } = req.body;
+    const { tipo, tipo_pago, nro_comprobante, descripcion, monto, categoria } = req.body;
 
     if (!tipo || !tipo_pago || !monto || monto <= 0) {
       return res.status(400).json({ error: 'Tipo, tipo de pago y monto válido requeridos' });
@@ -95,9 +95,10 @@ exports.registrar = async (req, res) => {
     const saldoDespues = tipo === 'ingreso' ? saldoActual + Number(monto) : saldoActual - Number(monto);
     if (saldoDespues < 0) return res.status(400).json({ error: 'Saldo insuficiente' });
 
+    const cat = tipo === 'egreso' ? (categoria || 'gasto') : null;
     const { rows } = await query(
-      'INSERT INTO caja_movimientos (sesion_id, tipo, tipo_pago, nro_comprobante, descripcion, monto, saldo_despues) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [sesion[0].id, tipo, tipo_pago, nro_comprobante || null, descripcion || null, monto, saldoDespues]
+      'INSERT INTO caja_movimientos (sesion_id, tipo, tipo_pago, nro_comprobante, descripcion, monto, saldo_despues, categoria) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [sesion[0].id, tipo, tipo_pago, nro_comprobante || null, descripcion || null, monto, saldoDespues, cat]
     );
 
     await query('UPDATE caja_sesiones SET saldo_final = $1 WHERE id = $2', [saldoDespues, sesion[0].id]);
@@ -128,10 +129,11 @@ async function recalcularSaldos(sesionId) {
 
 exports.actualizar = async (req, res) => {
   try {
-    const { tipo, tipo_pago, nro_comprobante, descripcion, monto } = req.body;
+    const { tipo, tipo_pago, nro_comprobante, descripcion, monto, categoria } = req.body;
+    const cat = tipo === 'egreso' ? (categoria || 'gasto') : null;
     const { rows } = await query(
-      'UPDATE caja_movimientos SET tipo = $1, tipo_pago = $2, nro_comprobante = $3, descripcion = $4, monto = $5 WHERE id = $6 RETURNING *',
-      [tipo, tipo_pago, nro_comprobante, descripcion, monto, req.params.id]
+      'UPDATE caja_movimientos SET tipo = $1, tipo_pago = $2, nro_comprobante = $3, descripcion = $4, monto = $5, categoria = $6 WHERE id = $7 RETURNING *',
+      [tipo, tipo_pago, nro_comprobante, descripcion, monto, cat, req.params.id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Movimiento no encontrado' });
 

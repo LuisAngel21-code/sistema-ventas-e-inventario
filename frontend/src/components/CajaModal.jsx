@@ -13,6 +13,7 @@ export default function CajaModal({ open, onClose, tipo, editData, onSave }) {
     nro_comprobante: '',
     descripcion: '',
     monto: '',
+    categoria: 'gasto',
   });
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
@@ -24,9 +25,10 @@ export default function CajaModal({ open, onClose, tipo, editData, onSave }) {
         nro_comprobante: editData.nro_comprobante || '',
         descripcion: editData.descripcion || '',
         monto: editData.monto || '',
+        categoria: editData.categoria || 'gasto',
       });
     } else {
-      setForm({ tipo_pago: 'efectivo', nro_comprobante: '', descripcion: '', monto: '' });
+      setForm({ tipo_pago: 'efectivo', nro_comprobante: '', descripcion: '', monto: '', categoria: 'gasto' });
     }
   }, [editData, open]);
 
@@ -49,6 +51,7 @@ export default function CajaModal({ open, onClose, tipo, editData, onSave }) {
           nro_comprobante: form.nro_comprobante,
           descripcion: form.descripcion,
           monto: Number(form.monto),
+          categoria: form.categoria,
         });
         showToast('Movimiento actualizado', 'success');
       } else {
@@ -58,6 +61,7 @@ export default function CajaModal({ open, onClose, tipo, editData, onSave }) {
           nro_comprobante: form.nro_comprobante,
           descripcion: form.descripcion,
           monto: Number(form.monto),
+          categoria: form.categoria,
         });
         showToast(res.message, 'success');
       }
@@ -83,6 +87,16 @@ export default function CajaModal({ open, onClose, tipo, editData, onSave }) {
   return (
     <Modal open={open} onClose={onClose} title={title}>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {tipo === 'egreso' && !editData && (
+          <div className="space-y-1.5">
+            <label className="input-label">Tipo de egreso</label>
+            <select className="input-field" value={form.categoria}
+              onChange={(e) => setForm({ ...form, categoria: e.target.value })}>
+              <option value="gasto">Gasto (luz, agua, alquiler, etc.)</option>
+              <option value="retiro">Retiro (dinero para el dueño)</option>
+            </select>
+          </div>
+        )}
         <Select
           label="Tipo de pago"
           value={form.tipo_pago}

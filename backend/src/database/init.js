@@ -262,6 +262,14 @@ async function initDatabase() {
     );
   `);
 
+  await query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='caja_movimientos' AND column_name='categoria') THEN
+        ALTER TABLE caja_movimientos ADD COLUMN categoria VARCHAR(30) DEFAULT 'gasto';
+      END IF;
+    END $$;
+  `);
+
   await query(`CREATE INDEX IF NOT EXISTS idx_caja_sesion ON caja_movimientos(sesion_id);`);
   await query(`
     DO $$ BEGIN

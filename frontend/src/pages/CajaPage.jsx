@@ -158,8 +158,9 @@ export default function CajaPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50/50">
-                    <th className="table-header">Hora</th>
-                    <th className="table-header">Tipo</th>
+                  <th className="table-header">Hora</th>
+                  <th className="table-header">Tipo</th>
+                  <th className="table-header">Categoría</th>
                   <th className="table-header">Tipo pago</th>
                   <th className="table-header">Descripción</th>
                   <th className="table-header text-right">Monto</th>
@@ -177,6 +178,13 @@ export default function CajaPage() {
                         {m.tipo === 'ingreso'
                           ? <Badge variant="success">Ingreso</Badge>
                           : <Badge variant="danger">Egreso</Badge>}
+                      </td>
+                      <td className="table-cell">
+                        {m.tipo === 'egreso' && m.categoria === 'retiro'
+                          ? <Badge variant="warning">Retiro</Badge>
+                          : m.tipo === 'egreso'
+                          ? <Badge variant="neutral">Gasto</Badge>
+                          : '—'}
                       </td>
                       <td className="table-cell capitalize text-gray-600">{m.tipo_pago}</td>
                       <td className="table-cell text-gray-700">{m.descripcion || '—'}</td>
