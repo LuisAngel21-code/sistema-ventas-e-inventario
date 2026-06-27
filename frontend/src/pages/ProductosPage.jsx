@@ -26,7 +26,7 @@ export default function ProductosPage() {
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('activos');
-  const [filtroProveedor, setFiltroProveedor] = useState('');
+
   const [catEsOtro, setCatEsOtro] = useState(false);
   const [marcaText, setMarcaText] = useState('');
 
@@ -124,9 +124,8 @@ export default function ProductosPage() {
 
   const marcasColchon = ['Paraíso', 'Cisne', 'Avanty', 'Gala', 'Gianlui'];
   const filtered = productos.filter(p =>
-    (!search || p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-    (p.codigo && p.codigo.toLowerCase().includes(search.toLowerCase()))) &&
-    (!filtroProveedor || (p.proveedor && p.proveedor.toLowerCase().includes(filtroProveedor.toLowerCase())))
+    !search || p.nombre.toLowerCase().includes(search.toLowerCase()) ||
+    (p.codigo && p.codigo.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -145,17 +144,13 @@ export default function ProductosPage() {
           <input className="input-field pl-9" placeholder="Buscar producto..."
             value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <div className="relative w-44">
-          <input className="input-field" placeholder="Buscar proveedor..."
-            value={filtroProveedor} onChange={(e) => setFiltroProveedor(e.target.value)} />
-        </div>
+
         <select className="input-field w-32"
           value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
           <option value="activos">Activos</option>
           <option value="todos">Todos</option>
           <option value="inactivos">Inactivos</option>
         </select>
-        <span className="text-xs text-gray-400">{filtered.length} productos</span>
         <Button variant="secondary" size="sm" onClick={() => window.open(getDownloadUrl('/api/exportes/productos'), '_blank')} icon={FileSpreadsheet}>
           Excel
         </Button>
