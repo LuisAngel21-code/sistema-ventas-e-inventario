@@ -42,6 +42,12 @@ exports.pagarCuota = async (req, res) => {
     const nuevoEstado = nuevasPagadas >= Number(cuenta[0].cuotas) ? 'pagada' : 'activa';
     await query('UPDATE cuentas_pagar SET cuotas_pagadas = $1, estado = $2 WHERE id = $3', [nuevasPagadas, nuevoEstado, req.params.id]);
 
+    const tituloObs = observaciones ? ` - ${observaciones}` : '';
+    await query(
+      'INSERT INTO agenda (titulo, fecha, tipo) VALUES ($1, $2, $3)',
+      [`Pago cuota #${nro_cuota} a ${cuenta[0].proveedor}${tituloObs}`, new Date().toISOString().split('T')[0], 'pago']
+    );
+
     res.json({ message: `Cuota ${nro_cuota} pagada` });
   } catch (error) { res.status(500).json({ error: error.message }); }
 };

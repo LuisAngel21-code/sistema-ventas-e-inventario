@@ -2,12 +2,14 @@ const { query } = require('../config/database');
 
 exports.getAll = async (req, res) => {
   try {
-    const { fecha, tipo } = req.query;
+    const { fecha, tipo, desde, hasta } = req.query;
     let sql = 'SELECT * FROM agenda WHERE 1=1';
     const params = [];
     let idx = 1;
     if (fecha) { sql += ` AND fecha = $${idx++}`; params.push(fecha); }
     if (tipo) { sql += ` AND tipo = $${idx++}`; params.push(tipo); }
+    if (desde) { sql += ` AND fecha >= $${idx++}`; params.push(desde); }
+    if (hasta) { sql += ` AND fecha <= $${idx++}`; params.push(hasta); }
     sql += ' ORDER BY fecha ASC, hora ASC';
     const { rows } = await query(sql, params);
     res.json(rows);

@@ -17,7 +17,7 @@ export default function TrabajadoresPage() {
   const [editId, setEditId] = useState(null);
   const [pagoModal, setPagoModal] = useState(null);
   const [form, setForm] = useState({ nombre: '', apellido: '', tipo: 'jornalero', telefono: '', email: '', sueldo_semanal: '', tarifa_por_unidad: '' });
-  const [pagoForm, setPagoForm] = useState({ trabajador_id: '', unidades: '' });
+  const [pagoForm, setPagoForm] = useState({ trabajador_id: '', unidades: '', monto_pagado: '' });
   const { showToast } = useToast();
 
   function load() {
@@ -56,7 +56,8 @@ export default function TrabajadoresPage() {
   }
 
   function abrirPago(t) {
-    setPagoForm({ trabajador_id: t.id, unidades: '' });
+    const totalEsperado = t.tipo === 'jornalero' ? Number(t.sueldo_semanal) : 0;
+    setPagoForm({ trabajador_id: t.id, unidades: '', monto_pagado: totalEsperado || '' });
     setPagoModal(t);
   }
 
@@ -71,6 +72,7 @@ export default function TrabajadoresPage() {
         semana_inicio: weekStart.toISOString().split('T')[0],
         semana_fin: weekEnd.toISOString().split('T')[0],
         unidades: Number(pagoForm.unidades) || 0,
+        monto_pagado: Number(pagoForm.monto_pagado) || 0,
       });
       showToast(res.message, 'success');
       setPagoModal(null);
@@ -157,7 +159,9 @@ export default function TrabajadoresPage() {
                   <th className="table-header">Tipo</th>
                   <th className="table-header">Semana</th>
                   <th className="table-header text-right">Unidades</th>
-                  <th className="table-header text-right">Total</th>
+                  <th className="table-header text-right">Esperado</th>
+                  <th className="table-header text-right">Pagado</th>
+                  <th className="table-header text-right">Saldo</th>
                   <th className="table-header text-center">Estado</th>
                   <th className="table-header text-center">Acción</th>
                 </tr></thead>
@@ -171,6 +175,8 @@ export default function TrabajadoresPage() {
                       </td>
                       <td className="table-cell text-right">{p.unidades || '—'}</td>
                       <td className="table-cell text-right font-semibold">S/ {Number(p.total_pagar).toFixed(2)}</td>
+                      <td className="table-cell text-right text-emerald-600">S/ {Number(p.monto_pagado || p.total_pagar).toFixed(2)}</td>
+                      <td className="table-cell text-right text-red-600 font-medium">{Number(p.saldo) > 0 ? `S/ ${Number(p.saldo).toFixed(2)}` : '—'}</td>
                       <td className="table-cell text-center">
                         {p.estado === 'pagado' ? <Badge variant="success">Pagado</Badge> : <Badge variant="warning">Pendiente</Badge>}
                       </td>
@@ -229,11 +235,13 @@ export default function TrabajadoresPage() {
             </p>
             {pagoModal.tipo === 'destajista' && (
               <Input label="Unidades producidas en la semana" type="number" min="0" value={pagoForm.unidades}
-                onChange={e => setPagoForm({ ...pagoForm, unidades: e.target.value })} required />
+                onChange={e => setPagoForm({ ...pagoForm, unidades: e.target.value })} />
             )}
+            <Input label="Monto a pagar *" type="number" step="0.01" min="0" value={pagoForm.monto_pagado}
+              onChange={e => setPagoForm({ ...pagoForm, monto_pagado: e.target.value })} required />
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="secondary" type="button" onClick={() => setPagoModal(null)}>Cancelar</Button>
-              <Button type="submit" icon={Calculator}>Calcular y Pagar</Button>
+              <Button type="submit" icon={Calculator}>Registrar Pago</Button>
             </div>
           </form>
         </Modal>

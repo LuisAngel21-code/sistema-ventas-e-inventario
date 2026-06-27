@@ -21,6 +21,11 @@ exports.create = async (req, res) => {
       'INSERT INTO entregas (venta_id, cliente, direccion, distrito, referencia, fecha_entrega, hora_programada, telefono, producto, observaciones) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *',
       [venta_id || null, cliente, direccion, distrito, referencia, fecha_entrega, hora_programada || null, telefono, producto, observaciones]
     );
+    const desc = `Dirección: ${direccion}${producto ? '. Producto: ' + producto : ''}`;
+    await query(
+      'INSERT INTO agenda (titulo, fecha, hora, descripcion, tipo) VALUES ($1, $2, $3, $4, $5)',
+      [`Entrega - ${cliente}`, fecha_entrega, hora_programada || null, desc, 'entrega']
+    );
     res.status(201).json({ entrega: rows[0], message: 'Entrega registrada' });
   } catch (error) { res.status(500).json({ error: error.message }); }
 };

@@ -41,7 +41,7 @@ exports.remove = async (req, res) => {
 
 exports.calcularPago = async (req, res) => {
   try {
-    const { trabajador_id, semana_inicio, semana_fin, unidades } = req.body;
+    const { trabajador_id, semana_inicio, semana_fin, unidades, monto_pagado } = req.body;
     const { rows: trab } = await query('SELECT * FROM trabajadores WHERE id = $1', [trabajador_id]);
     if (trab.length === 0) return res.status(404).json({ error: 'Trabajador no encontrado' });
 
@@ -64,12 +64,23 @@ exports.calcularPago = async (req, res) => {
       tipoPago = 'produccion';
     }
 
+    const montoPagado = Number(monto_pagado) || totalPagar;
+    const saldo = Math.max(0, totalPagar - montoPagado);
+    const estado = saldo === 0 ? 'pagado' : 'pendiente';
+
     const { rows } = await query(
-      'INSERT INTO pagos_trabajadores (trabajador_id, semana_inicio, semana_fin, tipo_pago, unidades, total_pagar) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
-      [trabajador_id, semana_inicio, semana_fin, tipoPago, numUnidades, totalPagar]
+      'INSERT INTO pagos_trabajadores (trabajador_id, semana_inicio, semana_fin, tipo_pago, unidades, total_pagar, monto_pagado, saldo, estado) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
+      [trabajador_id, semana_inicio, semana_fin, tipoPago, numUnidades, totalPagar, montoPagado, saldo, estado]
     );
 
-    res.status(201).json({ pago: rows[0], message: `Pago calculado: S/ ${totalPagar.toFixed(2)}` });
+    if (saldo > 0) {
+      await query(
+        'INSERT INTO agenda (titulo, fecha, tipo) VALUES ($1, $2, $3)',
+        [`Saldo pendiente: ${trab[0].nombre} ${trab[0].apellido} - S/ ${saldo.toFixed(2)}`, new Date().toISOString().split('T')[0], 'pago']
+      );
+    }
+
+    res.status(201).json({ pago: rows[0], message: `Pago: S/ ${montoPagado.toFixed(2)}. ${saldo > 0 ? 'Saldo: S/ ' + saldo.toFixed(2) : 'Cancelado'}` });
   } catch (error) { res.status(500).json({ error: error.message }); }
 };
 

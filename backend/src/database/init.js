@@ -263,6 +263,15 @@ async function initDatabase() {
   `);
 
   await query(`CREATE INDEX IF NOT EXISTS idx_caja_sesion ON caja_movimientos(sesion_id);`);
+  await query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='pagos_trabajadores' AND column_name='monto_pagado') THEN
+        ALTER TABLE pagos_trabajadores ADD COLUMN monto_pagado DECIMAL(10,2);
+        ALTER TABLE pagos_trabajadores ADD COLUMN saldo DECIMAL(10,2) DEFAULT 0;
+      END IF;
+    END $$;
+  `);
+
   await query(`CREATE INDEX IF NOT EXISTS idx_pagos_trabajador ON pagos_trabajadores(trabajador_id);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_entregas_fecha ON entregas(fecha_entrega);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_agenda_fecha ON agenda(fecha);`);
