@@ -14,7 +14,7 @@ const colors = {
   success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
   error: 'bg-red-50 border-red-200 text-red-800',
   info: 'bg-blue-50 border-blue-200 text-blue-800',
-  warning: 'bg-amber-50 border-amber-200 text-amber-800',
+  warning: 'bg-red-600 border-red-800 text-white font-bold',
 };
 
 const iconColors = {
@@ -28,11 +28,12 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
   const showToast = useCallback((message, type = 'success') => {
+    console.log('🟢 showToast called:', message, type);
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3500);
+    }, 4000);
   }, []);
 
   const removeToast = (id) => {
@@ -42,7 +43,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm">
+      <div id="toast-container" className="fixed top-4 right-4 z-[99999] flex flex-col gap-3 max-w-sm">
         {toasts.map(toast => {
           const Icon = icons[toast.type];
           return (
