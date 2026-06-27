@@ -11,9 +11,6 @@ import InventarioPage from './pages/InventarioPage';
 import VendedoresPage from './pages/VendedoresPage';
 import ReportesPage from './pages/ReportesPage';
 import PagosPage from './pages/PagosPage';
-import ComprasPage from './pages/ComprasPage';
-import NuevaCompra from './pages/NuevaCompra';
-import CompraDetalle from './pages/CompraDetalle';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -55,9 +52,6 @@ function AppRoutes() {
         <Route path="/inventario" element={<InventarioPage />} />
         <Route path="/vendedores" element={<VendedoresPage />} />
         <Route path="/reportes" element={<ReportesPage />} />
-        <Route path="/compras" element={<ComprasPage />} />
-        <Route path="/compras/nueva" element={<NuevaCompra />} />
-        <Route path="/compras/:id" element={<CompraDetalle />} />
         <Route path="/pagos" element={<PagosPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

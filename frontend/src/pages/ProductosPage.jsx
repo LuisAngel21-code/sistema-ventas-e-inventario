@@ -25,6 +25,7 @@ export default function ProductosPage() {
   const { showToast } = useToast();
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState('');
+  const [filtroProveedor, setFiltroProveedor] = useState('');
 
   function load() {
     setLoading(true);
@@ -99,9 +100,11 @@ export default function ProductosPage() {
     } catch (err) { showToast(err.message, 'error'); }
   }
 
+  const marcasColchon = ['Paraíso', 'Cisne', 'Avanty', 'Gala', 'Gianlui'];
   const filtered = productos.filter(p =>
-    !search || p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-    (p.codigo && p.codigo.toLowerCase().includes(search.toLowerCase()))
+    (!search || p.nombre.toLowerCase().includes(search.toLowerCase()) ||
+    (p.codigo && p.codigo.toLowerCase().includes(search.toLowerCase()))) &&
+    (!filtroProveedor || (p.proveedor && p.proveedor.toLowerCase().includes(filtroProveedor.toLowerCase())))
   );
 
   return (
@@ -114,15 +117,15 @@ export default function ProductosPage() {
         <Button onClick={openCreate} icon={Plus}>Nuevo Producto</Button>
       </div>
 
-      <div className="flex gap-3 items-center">
+      <div className="flex gap-3 items-center flex-wrap">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            className="input-field pl-9"
-            placeholder="Buscar producto..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <input className="input-field pl-9" placeholder="Buscar producto..."
+            value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <div className="relative w-48">
+          <input className="input-field" placeholder="Buscar proveedor..."
+            value={filtroProveedor} onChange={(e) => setFiltroProveedor(e.target.value)} />
         </div>
         <span className="text-xs text-gray-400">{filtered.length} productos</span>
         <Button variant="secondary" size="sm" onClick={() => window.open(getDownloadUrl('/api/exportes/productos'), '_blank')} icon={FileSpreadsheet}>
@@ -223,13 +226,28 @@ export default function ProductosPage() {
             </div>
             <div className="space-y-1.5">
               <label className="input-label">Marca</label>
-              <select className="input-field" value={form.marca_id}
+              <select className="input-field"
+                value={form.marca_id}
                 onChange={(e) => setForm({ ...form, marca_id: e.target.value })}>
-                <option value="">Sin marca</option>
-                {marcas.map(m => (
-                  <option key={m.id} value={m.id}>{m.nombre}</option>
-                ))}
+                <option value="">Seleccionar...</option>
+                {form.categoria === 'Colchón'
+                  ? marcasColchon.map(m => {
+                      const found = marcas.find(mc => mc.nombre === m);
+                      return found ? <option key={found.id} value={found.id}>{found.nombre}</option> : null;
+                    })
+                  : marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)
+                }
+                <option value="otro">Otro...</option>
               </select>
+              {form.marca_id === 'otro' && (
+                <input className="input-field mt-2" placeholder="Escribir marca..."
+                  onChange={(e) => {
+                    // Crear marca temporalmente
+                    const tempId = `temp-${Date.now()}`;
+                    setMarcas(prev => [...prev, { id: tempId, nombre: e.target.value }]);
+                    setForm({ ...form, marca_id: tempId });
+                  }} />
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">

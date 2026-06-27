@@ -16,7 +16,7 @@ export default function InventarioPage() {
   const [loading, setLoading] = useState(true);
   const [entryOpen, setEntryOpen] = useState(false);
   const { showToast } = useToast();
-  const [entryForm, setEntryForm] = useState({ producto_id: '', cantidad: '', referencia: '' });
+  const [entryForm, setEntryForm] = useState({ producto_id: '', cantidad: '', referencia: '', proveedor: '' });
 
   function loadStock() {
     setLoading(true);
@@ -42,13 +42,14 @@ export default function InventarioPage() {
   async function handleEntry(e) {
     e.preventDefault();
     try {
+      const ref = entryForm.proveedor ? `Entrada - ${entryForm.proveedor}` : (entryForm.referencia || 'Entrada manual');
       await inventarioAPI.entradaStock({
         producto_id: Number(entryForm.producto_id),
         cantidad: Number(entryForm.cantidad),
-        referencia: entryForm.referencia || 'Entrada manual',
+        referencia: ref,
       });
       setEntryOpen(false);
-      setEntryForm({ producto_id: '', cantidad: '', referencia: '' });
+      setEntryForm({ producto_id: '', cantidad: '', referencia: '', proveedor: '' });
       showToast('Stock actualizado exitosamente', 'success');
       loadStock();
     } catch (err) { showToast(err.message, 'error'); }
@@ -191,6 +192,9 @@ export default function InventarioPage() {
           <Input label="Cantidad" type="number" min="1" placeholder="Cantidad"
             value={entryForm.cantidad}
             onChange={(e) => setEntryForm({ ...entryForm, cantidad: e.target.value })} required />
+          <Input label="Proveedor" placeholder="Proveedor (opcional)"
+            value={entryForm.proveedor}
+            onChange={(e) => setEntryForm({ ...entryForm, proveedor: e.target.value })} />
           <Input label="Referencia" placeholder="Referencia (opcional)"
             value={entryForm.referencia}
             onChange={(e) => setEntryForm({ ...entryForm, referencia: e.target.value })} />
