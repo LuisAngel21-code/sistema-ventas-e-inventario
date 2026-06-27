@@ -71,6 +71,7 @@ export const productosAPI = {
   getById: (id) => request(`/api/productos/${id}`),
   create: (data) => request('/api/productos', { method: 'POST', body: data }),
   update: (id, data) => request(`/api/productos/${id}`, { method: 'PUT', body: data }),
+  activar: (id) => request(`/api/productos/${id}/activar`, { method: 'PUT' }),
   remove: (id) => request(`/api/productos/${id}`, { method: 'DELETE' }),
 };
 

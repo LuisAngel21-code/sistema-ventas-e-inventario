@@ -102,8 +102,17 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    await query('DELETE FROM productos WHERE id = $1', [req.params.id]);
-    res.json({ message: 'Producto eliminado exitosamente' });
+    await query('UPDATE productos SET activo = false WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Producto desactivado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.activar = async (req, res) => {
+  try {
+    await query('UPDATE productos SET activo = true WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Producto activado' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

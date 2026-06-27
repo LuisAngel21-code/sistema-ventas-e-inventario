@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { productosAPI, marcasAPI, getDownloadUrl } from '../services/api';
-import { Package, Plus, Pencil, Trash2, Search, FileSpreadsheet } from 'lucide-react';
+import { Package, Plus, Pencil, Trash2, Search, FileSpreadsheet, CheckCircle } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -25,6 +25,7 @@ export default function ProductosPage() {
   const { showToast } = useToast();
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('activos');
   const [filtroProveedor, setFiltroProveedor] = useState('');
   const [catEsOtro, setCatEsOtro] = useState(false);
   const [marcaText, setMarcaText] = useState('');
@@ -32,7 +33,7 @@ export default function ProductosPage() {
   function load() {
     setLoading(true);
     Promise.all([
-      productosAPI.getAll(true),
+      productosAPI.getAll(filtroEstado !== 'inactivos'),
       marcasAPI.getAll(),
     ]).then(([prods, mar]) => {
       setProductos(prods);
@@ -42,6 +43,7 @@ export default function ProductosPage() {
   }
 
   useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [filtroEstado]);
 
   function openCreate() {
     setEditId(null);
@@ -102,11 +104,20 @@ export default function ProductosPage() {
     } catch (err) { showToast(err.message, 'error'); }
   }
 
-  async function eliminar(id) {
+  async function desactivar(id) {
     try {
       await productosAPI.remove(id);
       setDeleteId(null);
-      showToast('Producto eliminado exitosamente', 'success');
+      showToast('Producto desactivado', 'success');
+      load();
+    } catch (err) { showToast(err.message, 'error'); }
+  }
+
+  async function activarProducto(id) {
+    try {
+      await productosAPI.activar(id);
+      setDeleteId(null);
+      showToast('Producto activado', 'success');
       load();
     } catch (err) { showToast(err.message, 'error'); }
   }
@@ -134,10 +145,16 @@ export default function ProductosPage() {
           <input className="input-field pl-9" placeholder="Buscar producto..."
             value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <div className="relative w-48">
+        <div className="relative w-44">
           <input className="input-field" placeholder="Buscar proveedor..."
             value={filtroProveedor} onChange={(e) => setFiltroProveedor(e.target.value)} />
         </div>
+        <select className="input-field w-32"
+          value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
+          <option value="activos">Activos</option>
+          <option value="todos">Todos</option>
+          <option value="inactivos">Inactivos</option>
+        </select>
         <span className="text-xs text-gray-400">{filtered.length} productos</span>
         <Button variant="secondary" size="sm" onClick={() => window.open(getDownloadUrl('/api/exportes/productos'), '_blank')} icon={FileSpreadsheet}>
           Excel
@@ -187,9 +204,15 @@ export default function ProductosPage() {
                         <Button variant="ghost" size="sm" onClick={() => openEdit(p.id)}>
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(p.id)}>
-                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                        </Button>
+                        {p.activo !== false ? (
+                          <Button variant="ghost" size="sm" onClick={() => setDeleteId(p.id)}>
+                            <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                          </Button>
+                        ) : (
+                          <Button variant="ghost" size="sm" onClick={() => activarProducto(p.id)}>
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -299,11 +322,11 @@ export default function ProductosPage() {
         </form>
       </Modal>
 
-      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Producto">
-        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.</p>
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Desactivar Producto">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de desactivar este producto? No aparecerá en las listas pero el historial de ventas se conserva.</p>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
-          <Button variant="danger" onClick={() => eliminar(deleteId)}>Eliminar</Button>
+          <Button variant="danger" onClick={() => desactivar(deleteId)}>Desactivar</Button>
         </div>
       </Modal>
     </div>
