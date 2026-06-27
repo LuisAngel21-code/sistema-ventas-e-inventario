@@ -22,6 +22,7 @@ export default function NuevaVenta() {
   const [voucherFile, setVoucherFile] = useState(null);
   const comprobanteRef = useRef();
   const voucherRef = useRef();
+  const { showToast } = useToast();
 
   useEffect(() => {
     Promise.all([
@@ -68,7 +69,7 @@ export default function NuevaVenta() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-        if (!vendedorId) return showToast('Seleccione un vendedor', 'warning');
+    if (!vendedorId) return showToast('Seleccione un vendedor', 'warning');
     if (items.some(i => !i.producto_id)) return showToast('Complete todos los productos', 'warning');
     if (!nroComprobante) return showToast('Nro. de comprobante requerido', 'warning');
     if (!comprobanteFile) return showToast('Foto del comprobante requerida', 'warning');
