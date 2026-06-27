@@ -128,6 +128,8 @@ export const cajaAPI = {
   cerrar: () => request('/api/caja/cerrar', { method: 'POST' }),
   movimientos: (sesion_id) => request(`/api/caja/movimientos${sesion_id ? '?sesion_id=' + sesion_id : ''}`),
   registrar: (data) => request('/api/caja/movimientos', { method: 'POST', body: data }),
+  actualizar: (id, data) => request(`/api/caja/movimientos/${id}`, { method: 'PUT', body: data }),
+  eliminar: (id) => request(`/api/caja/movimientos/${id}`, { method: 'DELETE' }),
   historial: (desde, hasta) => request(`/api/caja/historial?desde=${desde || ''}&hasta=${hasta || ''}`),
 };
 

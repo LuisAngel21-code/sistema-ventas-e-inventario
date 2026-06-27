@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cajaAPI } from '../services/api';
 import { DollarSign } from 'lucide-react';
 import Modal from './ui/Modal';
@@ -7,7 +7,7 @@ import Select from './ui/Select';
 import Button from './ui/Button';
 import { useToast } from '../context/ToastContext';
 
-export default function CajaModal({ open, onClose, tipo, onSave }) {
+export default function CajaModal({ open, onClose, tipo, editData, onSave }) {
   const [form, setForm] = useState({
     tipo_pago: 'efectivo',
     nro_comprobante: '',
@@ -17,6 +17,24 @@ export default function CajaModal({ open, onClose, tipo, onSave }) {
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
 
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        tipo_pago: editData.tipo_pago || 'efectivo',
+        nro_comprobante: editData.nro_comprobante || '',
+        descripcion: editData.descripcion || '',
+        monto: editData.monto || '',
+      });
+    } else {
+      setForm({ tipo_pago: 'efectivo', nro_comprobante: '', descripcion: '', monto: '' });
+    }
+  }, [editData, open]);
+
+  const isEditing = !!editData;
+  const title = isEditing
+    ? `Editar ${editData?.tipo === 'ingreso' ? 'Ingreso' : 'Egreso'}`
+    : `${tipo === 'ingreso' ? 'Registrar Ingreso' : 'Registrar Egreso'}`;
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.monto || Number(form.monto) <= 0) {
@@ -24,14 +42,25 @@ export default function CajaModal({ open, onClose, tipo, onSave }) {
     }
     setSaving(true);
     try {
-      const res = await cajaAPI.registrar({
-        tipo,
-        tipo_pago: form.tipo_pago,
-        nro_comprobante: form.nro_comprobante,
-        descripcion: form.descripcion,
-        monto: Number(form.monto),
-      });
-      showToast(res.message, 'success');
+      if (isEditing) {
+        await cajaAPI.actualizar(editData.id, {
+          tipo: editData.tipo,
+          tipo_pago: form.tipo_pago,
+          nro_comprobante: form.nro_comprobante,
+          descripcion: form.descripcion,
+          monto: Number(form.monto),
+        });
+        showToast('Movimiento actualizado', 'success');
+      } else {
+        const res = await cajaAPI.registrar({
+          tipo,
+          tipo_pago: form.tipo_pago,
+          nro_comprobante: form.nro_comprobante,
+          descripcion: form.descripcion,
+          monto: Number(form.monto),
+        });
+        showToast(res.message, 'success');
+      }
       setForm({ tipo_pago: 'efectivo', nro_comprobante: '', descripcion: '', monto: '' });
       onSave();
     } catch (err) {
@@ -52,7 +81,7 @@ export default function CajaModal({ open, onClose, tipo, onSave }) {
   ];
 
   return (
-    <Modal open={open} onClose={onClose} title={tipo === 'ingreso' ? 'Registrar Ingreso' : 'Registrar Egreso'}>
+    <Modal open={open} onClose={onClose} title={title}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Select
           label="Tipo de pago"
@@ -89,7 +118,7 @@ export default function CajaModal({ open, onClose, tipo, onSave }) {
         <div className="flex justify-end gap-3 pt-2">
           <Button variant="secondary" type="button" onClick={onClose}>Cancelar</Button>
           <Button type="submit" loading={saving}>
-            {tipo === 'ingreso' ? 'Registrar Ingreso' : 'Registrar Egreso'}
+            {isEditing ? 'Guardar Cambios' : tipo === 'ingreso' ? 'Registrar Ingreso' : 'Registrar Egreso'}
           </Button>
         </div>
       </form>

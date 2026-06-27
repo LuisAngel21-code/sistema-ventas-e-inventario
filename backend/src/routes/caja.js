@@ -6,6 +6,8 @@ router.post('/abrir', controller.abrir);
 router.post('/cerrar', controller.cerrar);
 router.get('/movimientos', controller.movimientos);
 router.post('/movimientos', controller.registrar);
+router.put('/movimientos/:id', controller.actualizar);
+router.delete('/movimientos/:id', controller.eliminar);
 router.get('/historial', controller.historial);
 
 module.exports = router;

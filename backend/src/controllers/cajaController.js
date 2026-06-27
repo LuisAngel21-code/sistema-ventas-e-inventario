@@ -108,6 +108,52 @@ exports.registrar = async (req, res) => {
   }
 };
 
+async function recalcularSaldos(sesionId) {
+  const { rows: sesion } = await query('SELECT saldo_inicial FROM caja_sesiones WHERE id = $1', [sesionId]);
+  if (sesion.length === 0) return;
+
+  let saldo = Number(sesion[0].saldo_inicial);
+  const { rows: movs } = await query(
+    'SELECT id, tipo, monto FROM caja_movimientos WHERE sesion_id = $1 ORDER BY id',
+    [sesionId]
+  );
+
+  for (const m of movs) {
+    saldo = m.tipo === 'ingreso' ? saldo + Number(m.monto) : saldo - Number(m.monto);
+    await query('UPDATE caja_movimientos SET saldo_despues = $1 WHERE id = $2', [saldo, m.id]);
+  }
+
+  await query('UPDATE caja_sesiones SET saldo_final = $1 WHERE id = $2', [saldo, sesionId]);
+}
+
+exports.actualizar = async (req, res) => {
+  try {
+    const { tipo, tipo_pago, nro_comprobante, descripcion, monto } = req.body;
+    const { rows } = await query(
+      'UPDATE caja_movimientos SET tipo = $1, tipo_pago = $2, nro_comprobante = $3, descripcion = $4, monto = $5 WHERE id = $6 RETURNING *',
+      [tipo, tipo_pago, nro_comprobante, descripcion, monto, req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Movimiento no encontrado' });
+
+    await recalcularSaldos(rows[0].sesion_id);
+    res.json({ message: 'Movimiento actualizado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.eliminar = async (req, res) => {
+  try {
+    const { rows } = await query('DELETE FROM caja_movimientos WHERE id = $1 RETURNING sesion_id', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Movimiento no encontrado' });
+
+    await recalcularSaldos(rows[0].sesion_id);
+    res.json({ message: 'Movimiento eliminado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.historial = async (req, res) => {
   try {
     const { desde, hasta } = req.query;

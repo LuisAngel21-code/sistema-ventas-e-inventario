@@ -5,6 +5,7 @@ import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import CajaModal from '../components/CajaModal';
+import Modal from '../components/ui/Modal';
 import { useToast } from '../context/ToastContext';
 
 export default function CajaPage() {
@@ -13,6 +14,8 @@ export default function CajaPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTipo, setModalTipo] = useState('ingreso');
+  const [editMovimiento, setEditMovimiento] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
   const { showToast } = useToast();
 
   function load() {
@@ -49,9 +52,19 @@ export default function CajaPage() {
     } catch (err) { showToast(err.message, 'error'); }
   }
 
-  function abrirModal(tipo) {
+  function abrirModal(tipo, movimiento = null) {
     setModalTipo(tipo);
+    setEditMovimiento(movimiento);
     setModalOpen(true);
+  }
+
+  async function eliminarMov(id) {
+    try {
+      await cajaAPI.eliminar(id);
+      setDeleteId(null);
+      showToast('Movimiento eliminado', 'success');
+      load();
+    } catch (err) { showToast(err.message, 'error'); }
   }
 
   const totalIngresos = movimientos
@@ -113,7 +126,8 @@ export default function CajaPage() {
             <Button className="flex-1" onClick={() => abrirModal('ingreso')} icon={Plus}>
               Ingreso
             </Button>
-            <Button className="flex-1" variant="secondary" onClick={() => abrirModal('egreso')} icon={Minus}>
+            <Button className="flex-1" onClick={() => abrirModal('egreso')} icon={Minus}
+              style={{ backgroundColor: '#d97706' }}>
               Egreso
             </Button>
           </div>
@@ -144,11 +158,12 @@ export default function CajaPage() {
                   <tr className="bg-gray-50/50">
                     <th className="table-header">Hora</th>
                     <th className="table-header">Tipo</th>
-                    <th className="table-header">Tipo pago</th>
-                    <th className="table-header">Descripción</th>
-                    <th className="table-header text-right">Monto</th>
-                    <th className="table-header text-right">Saldo</th>
-                  </tr>
+                  <th className="table-header">Tipo pago</th>
+                  <th className="table-header">Descripción</th>
+                  <th className="table-header text-right">Monto</th>
+                  <th className="table-header text-right">Saldo</th>
+                  <th className="table-header text-center">Acciones</th>
+                </tr>
                 </thead>
                 <tbody>
                   {movimientos.map(m => (
@@ -167,11 +182,29 @@ export default function CajaPage() {
                         {m.tipo === 'ingreso' ? '+' : '-'} S/ {Number(m.monto).toFixed(2)}
                       </td>
                       <td className="table-cell text-right text-gray-700">S/ {Number(m.saldo_despues).toFixed(2)}</td>
+                      <td className="table-cell text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => abrirModal(m.tipo, m)}
+                            className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
+                            title="Editar">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button onClick={() => setDeleteId(m.id)}
+                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                            title="Eliminar">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                   {movimientos.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="text-center py-8 text-gray-400">
+                      <td colSpan={7} className="text-center py-8 text-gray-400">
                         No hay movimientos aún
                       </td>
                     </tr>
@@ -185,10 +218,19 @@ export default function CajaPage() {
 
       <CajaModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); setEditMovimiento(null); }}
         tipo={modalTipo}
-        onSave={() => { setModalOpen(false); load(); }}
+        editData={editMovimiento}
+        onSave={() => { setModalOpen(false); setEditMovimiento(null); load(); }}
       />
+
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar movimiento">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar este movimiento? Se recalculará el saldo de la caja.</p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
+          <Button variant="danger" onClick={() => eliminarMov(deleteId)}>Eliminar</Button>
+        </div>
+      </Modal>
     </div>
   );
 }
