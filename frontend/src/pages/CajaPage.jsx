@@ -82,7 +82,8 @@ export default function CajaPage() {
           <p className="page-subtitle">Control de caja diaria</p>
         </div>
         {sesion ? (
-          <Button variant="danger" onClick={cerrarCaja} icon={Lock}>Cerrar Caja</Button>
+          <Button onClick={cerrarCaja} icon={Lock}
+            style={{ backgroundColor: '#A83723' }}>Cerrar Caja</Button>
         ) : (
           <Button onClick={abrirCaja} icon={Unlock}>Abrir Caja</Button>
         )}
