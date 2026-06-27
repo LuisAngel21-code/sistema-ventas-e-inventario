@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { productosAPI, marcasAPI } from '../services/api';
-import { Package, Plus, Pencil, Trash2, Search, BadgeHelp } from 'lucide-react';
+import { productosAPI, marcasAPI, getDownloadUrl } from '../services/api';
+import { Package, Plus, Pencil, Trash2, Search, FileSpreadsheet } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -125,6 +125,9 @@ export default function ProductosPage() {
           />
         </div>
         <span className="text-xs text-gray-400">{filtered.length} productos</span>
+        <Button variant="secondary" size="sm" onClick={() => window.open(getDownloadUrl('/api/exportes/productos'), '_blank')} icon={FileSpreadsheet}>
+          Excel
+        </Button>
       </div>
 
       <div className="card-page overflow-hidden">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { vendedoresAPI } from '../services/api';
-import { Users, Plus, Pencil, Trash2, Mail, Phone, DollarSign, UserCircle } from 'lucide-react';
+import { vendedoresAPI, getDownloadUrl } from '../services/api';
+import { Users, Plus, Pencil, Trash2, Mail, Phone, DollarSign, UserCircle, FileSpreadsheet } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -72,7 +72,10 @@ export default function VendedoresPage() {
           <h1 className="page-title">Vendedores</h1>
           <p className="page-subtitle">Gestión del equipo de ventas</p>
         </div>
-        <Button onClick={openCreate} icon={Plus}>Nuevo Vendedor</Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => window.open(getDownloadUrl('/api/exportes/vendedores'), '_blank')} icon={FileSpreadsheet}>Excel</Button>
+          <Button onClick={openCreate} icon={Plus}>Nuevo Vendedor</Button>
+        </div>
       </div>
 
       {loading ? <Spinner className="h-48" /> : (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { inventarioAPI, productosAPI } from '../services/api';
-import { Warehouse, Package, Plus, ArrowUpDown, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { inventarioAPI, productosAPI, getDownloadUrl } from '../services/api';
+import { Warehouse, Package, Plus, ArrowUpDown, AlertTriangle, CheckCircle, XCircle, FileSpreadsheet } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -73,7 +73,10 @@ export default function InventarioPage() {
           <h1 className="page-title">Inventario</h1>
           <p className="page-subtitle">Control de existencias</p>
         </div>
-        <Button onClick={() => setEntryOpen(true)} icon={Plus}>Entrada de Stock</Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => window.open(getDownloadUrl('/api/exportes/inventario'), '_blank')} icon={FileSpreadsheet}>Excel</Button>
+          <Button onClick={() => setEntryOpen(true)} icon={Plus}>Entrada de Stock</Button>
+        </div>
       </div>
 
       {/* Tabs */}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ventasAPI, vendedoresAPI } from '../services/api';
-import { ShoppingCart, Plus, Search, Trash2, Calendar, User } from 'lucide-react';
+import { ventasAPI, vendedoresAPI, getDownloadUrl } from '../services/api';
+import { ShoppingCart, Plus, Search, Trash2, Calendar, User, FileSpreadsheet } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -83,6 +83,11 @@ export default function VentasPage() {
           </div>
           <div className="flex items-end">
             <Button onClick={load} icon={Search} className="w-full">Filtrar</Button>
+          </div>
+          <div className="flex items-end">
+            <Button variant="secondary" onClick={() => window.open(getDownloadUrl('/api/exportes/ventas'), '_blank')} icon={FileSpreadsheet} className="w-full">
+              Excel
+            </Button>
           </div>
         </div>
       </div>
