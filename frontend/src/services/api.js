@@ -64,6 +64,7 @@ export const vendedoresAPI = {
   create: (data) => request('/api/vendedores', { method: 'POST', body: data }),
   update: (id, data) => request(`/api/vendedores/${id}`, { method: 'PUT', body: data }),
   remove: (id) => request(`/api/vendedores/${id}`, { method: 'DELETE' }),
+  activar: (id) => request(`/api/vendedores/${id}/activar`, { method: 'PUT' }),
 };
 
 export const productosAPI = {

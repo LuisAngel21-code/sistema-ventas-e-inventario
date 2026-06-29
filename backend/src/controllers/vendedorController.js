@@ -62,3 +62,12 @@ exports.remove = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.activar = async (req, res) => {
+  try {
+    await query('UPDATE vendedores SET activo = true WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Vendedor activado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

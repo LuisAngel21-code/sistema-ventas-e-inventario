@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { vendedoresAPI, getDownloadUrl } from '../services/api';
-import { Users, Plus, Pencil, Trash2, Mail, Phone, DollarSign, UserCircle, FileSpreadsheet } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, Mail, Phone, DollarSign, UserCircle, FileSpreadsheet, CheckCircle } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -17,6 +17,7 @@ export default function VendedoresPage() {
   const [editId, setEditId] = useState(null);
   const { showToast } = useToast();
   const [deleteId, setDeleteId] = useState(null);
+  const [filtroEstado, setFiltroEstado] = useState('activos');
   const [form, setForm] = useState(emptyVendedor);
 
   function load() {
@@ -28,6 +29,7 @@ export default function VendedoresPage() {
   }
 
   useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [filtroEstado]);
 
   function openCreate() {
     setEditId(null);
@@ -56,14 +58,28 @@ export default function VendedoresPage() {
     } catch (err) { showToast(err.message, 'error'); }
   }
 
-  async function eliminar(id) {
+  async function desactivar(id) {
     try {
       await vendedoresAPI.remove(id);
       setDeleteId(null);
-      showToast('Vendedor eliminado exitosamente', 'success');
+      showToast('Vendedor desactivado', 'success');
       load();
     } catch (err) { showToast(err.message, 'error'); }
   }
+
+  async function activarVendedor(id) {
+    try {
+      await vendedoresAPI.activar(id);
+      showToast('Vendedor activado', 'success');
+      load();
+    } catch (err) { showToast(err.message, 'error'); }
+  }
+
+  const filtered = vendedores.filter(v => {
+    if (filtroEstado === 'activos') return v.activo !== false;
+    if (filtroEstado === 'inactivos') return v.activo === false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -78,9 +94,18 @@ export default function VendedoresPage() {
         </div>
       </div>
 
+      <div className="flex gap-2">
+        {['activos', 'todos', 'inactivos'].map(est => (
+          <button key={est} onClick={() => setFiltroEstado(est)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filtroEstado === est ? 'bg-primary-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+            {est === 'activos' ? 'Activos' : est === 'todos' ? 'Todos' : 'Inactivos'}
+          </button>
+        ))}
+      </div>
+
       {loading ? <Spinner className="h-48" /> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {vendedores.map(v => (
+          {filtered.map(v => (
             <div key={v.id} className="stat-card p-5 hover:border-gray-200 group">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -94,7 +119,11 @@ export default function VendedoresPage() {
                 </div>
                 <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button variant="ghost" size="sm" onClick={() => openEdit(v)}><Pencil className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="sm" onClick={() => setDeleteId(v.id)}><Trash2 className="w-3.5 h-3.5 text-red-400" /></Button>
+                  {v.activo !== false ? (
+                    <Button variant="ghost" size="sm" onClick={() => setDeleteId(v.id)}><Trash2 className="w-3.5 h-3.5 text-red-400" /></Button>
+                  ) : (
+                    <Button variant="ghost" size="sm" onClick={() => activarVendedor(v.id)}><CheckCircle className="w-3.5 h-3.5 text-emerald-500" /></Button>
+                  )}
                 </div>
               </div>
               <div className="space-y-2 text-sm">
@@ -144,11 +173,11 @@ export default function VendedoresPage() {
         </form>
       </Modal>
 
-      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Vendedor">
-        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar este vendedor? Esta acción no se puede deshacer.</p>
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Desactivar Vendedor">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de desactivar este vendedor? No aparecerá en las listas pero el historial se conserva.</p>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
-          <Button variant="danger" onClick={() => eliminar(deleteId)}>Eliminar</Button>
+          <Button variant="danger" onClick={() => desactivar(deleteId)}>Desactivar</Button>
         </div>
       </Modal>
     </div>
