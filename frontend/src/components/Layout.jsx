@@ -14,11 +14,11 @@ const navItems = [
   { path: '/inventario', label: 'Inventario', icon: Warehouse },
   { path: '/vendedores', label: 'Vendedores', icon: Users },
   { path: '/reportes', label: 'Reportes', icon: FileBarChart },
-  { path: '/caja', label: 'Caja', icon: Wallet },
-  { path: '/entregas', label: 'Entregas', icon: Truck },
+  { path: '/caja', label: 'Caja', icon: Wallet, rol: 'administradora' },
+  { path: '/entregas', label: 'Entregas', icon: Truck, rol: 'administradora' },
   { path: '/agenda', label: 'Agenda', icon: Calendar },
-  { path: '/trabajadores', label: 'Trabajadores', icon: Users },
-  { path: '/pagos', label: 'Pagos', icon: DollarSign },
+  { path: '/trabajadores', label: 'Trabajadores', icon: Briefcase, rol: 'administradora' },
+  { path: '/pagos', label: 'Pagos', icon: DollarSign, rol: 'administradora' },
 ];
 
 export default function Layout() {
@@ -83,7 +83,7 @@ export default function Layout() {
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => {
+          {navItems.filter(item => !item.rol || user?.rol === item.rol).map((item) => {
             const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
             const Icon = item.icon;
             return (

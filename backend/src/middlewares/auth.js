@@ -37,4 +37,11 @@ function adminOnly(req, res, next) {
   return res.status(403).json({ error: 'Acceso denegado. Solo administradores.' });
 }
 
-module.exports = { authenticate, adminOnly };
+function role(...roles) {
+  return (req, res, next) => {
+    if (req.user && roles.includes(req.user.rol)) return next();
+    return res.status(403).json({ error: 'Acceso denegado para este rol' });
+  };
+}
+
+module.exports = { authenticate, adminOnly, role };
