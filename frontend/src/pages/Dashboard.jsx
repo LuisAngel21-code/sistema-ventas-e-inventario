@@ -26,7 +26,7 @@ export default function Dashboard() {
     ]).then(([bal, cfg]) => {
       setBalance(bal);
       setAlquiler(cfg.valor || '');
-    }).catch(console.error).finally(() => setLoading(false));
+    }).catch(err => { console.error(err); setBalance(null); }).finally(() => setLoading(false));
   }
 
   useEffect(() => { load(); }, []);

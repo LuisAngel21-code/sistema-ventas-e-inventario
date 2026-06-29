@@ -14,7 +14,7 @@ export default function ReportesPage() {
   useEffect(() => {
     pagosAPI.personal()
       .then(p => { setPersonal(p); setLoading(false); })
-      .catch(console.error);
+      .catch(err => { console.error(err); setLoading(false); });
   }, []);
 
   async function descargar(tipo, params = {}) {
