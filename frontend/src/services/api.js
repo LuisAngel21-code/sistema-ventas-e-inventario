@@ -169,11 +169,12 @@ export const cajaAPI = {
 };
 
 export const pagosAPI = {
-  getAll: () => request('/api/pagos'),
-  calcular: (inicio, fin) => request(`/api/pagos/calcular?semana_inicio=${inicio}&semana_fin=${fin}`, { method: 'POST' }),
-  marcarPagado: (id) => request(`/api/pagos/${id}/pagar`, { method: 'PUT' }),
-  remove: (id) => request(`/api/pagos/${id}`, { method: 'DELETE' }),
-  adelanto: (id, monto) => request(`/api/pagos/${id}/adelanto`, { method: 'PUT', body: { monto } }),
+  getAll: (params) => request(`/api/pagos?${new URLSearchParams(params || {}).toString()}`),
+  personal: () => request('/api/pagos/personal'),
+  calcular: (inicio, fin, params) => request(`/api/pagos/calcular?semana_inicio=${inicio}&semana_fin=${fin}${params ? '&' + params : ''}`, { method: 'POST' }),
+  marcarPagado: (id, fuente) => request(`/api/pagos/${id}/pagar?fuente=${fuente}`, { method: 'PUT' }),
+  remove: (id, fuente) => request(`/api/pagos/${id}?fuente=${fuente}`, { method: 'DELETE' }),
+  adelanto: (id, monto, fuente) => request(`/api/pagos/${id}/adelanto`, { method: 'PUT', body: { monto, fuente } }),
 };
 
 export const categoriasAPI = {
