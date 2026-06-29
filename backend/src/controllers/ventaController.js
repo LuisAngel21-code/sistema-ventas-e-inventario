@@ -6,9 +6,11 @@ exports.getAll = async (req, res) => {
     const { desde, hasta, vendedor_id } = req.query;
     let sql = `
       SELECT v.id, v.fecha, v.total, v.tipo_comprobante, v.metodo_pago, v.nro_comprobante,
-             ve.nombre AS vendedor_nombre, ve.apellido AS vendedor_apellido
+             COALESCE(ve.nombre, t.nombre) AS vendedor_nombre,
+             COALESCE(ve.apellido, t.apellido) AS vendedor_apellido
       FROM ventas v
-      JOIN vendedores ve ON v.vendedor_id = ve.id
+      LEFT JOIN vendedores ve ON v.vendedor_id = ve.id
+      LEFT JOIN trabajadores t ON v.trabajador_id = t.id
       WHERE 1=1`;
     const params = [];
     let idx = 1;
@@ -29,12 +31,15 @@ exports.getAll = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const { rows: venta } = await query(
-      `SELECT v.*, ve.nombre AS vendedor_nombre, ve.apellido AS vendedor_apellido,
+      `SELECT v.*,
+              COALESCE(ve.nombre, t.nombre) AS vendedor_nombre,
+              COALESCE(ve.apellido, t.apellido) AS vendedor_apellido,
               COALESCE(v.tipo_comprobante, 'boleta') as tipo_comprobante,
               COALESCE(v.metodo_pago, 'efectivo') as metodo_pago,
               COALESCE(v.nro_comprobante, '') as nro_comprobante
        FROM ventas v
-       JOIN vendedores ve ON v.vendedor_id = ve.id
+       LEFT JOIN vendedores ve ON v.vendedor_id = ve.id
+       LEFT JOIN trabajadores t ON v.trabajador_id = t.id
        WHERE v.id = $1`,
       [req.params.id]
     );
@@ -55,12 +60,12 @@ exports.getById = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  let { vendedor_id, productos, tipo_comprobante, metodo_pago, nro_comprobante } = req.body;
+  let { vendedor_id, trabajador_id, productos, tipo_comprobante, metodo_pago, nro_comprobante } = req.body;
   if (typeof productos === 'string') productos = JSON.parse(productos);
   const files = req.files || {};
 
-  if (!vendedor_id || !productos || productos.length === 0) {
-    return res.status(400).json({ error: 'Debe especificar vendedor y al menos un producto' });
+  if ((!vendedor_id && !trabajador_id) || !productos || productos.length === 0) {
+    return res.status(400).json({ error: 'Debe especificar vendedor/encargado y al menos un producto' });
   }
   if (!tipo_comprobante) return res.status(400).json({ error: 'Tipo de comprobante requerido' });
   if (!metodo_pago) return res.status(400).json({ error: 'Método de pago requerido' });
@@ -120,8 +125,8 @@ exports.create = async (req, res) => {
     totalVenta = Math.round(totalVenta * 100) / 100;
 
     const { rows: ventaResult } = await client.query(
-      "INSERT INTO ventas (vendedor_id, total, tipo_comprobante, metodo_pago, nro_comprobante, voucher_url, comprobante_url, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, 'completada') RETURNING id",
-      [vendedor_id, totalVenta, tipo_comprobante, metodo_pago, nro_comprobante, voucherUrl, comprobanteUrl]
+      "INSERT INTO ventas (vendedor_id, trabajador_id, total, tipo_comprobante, metodo_pago, nro_comprobante, voucher_url, comprobante_url, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'completada') RETURNING id",
+      [vendedor_id || null, trabajador_id || null, totalVenta, tipo_comprobante, metodo_pago, nro_comprobante, voucherUrl, comprobanteUrl]
     );
     const ventaId = ventaResult[0].id;
 

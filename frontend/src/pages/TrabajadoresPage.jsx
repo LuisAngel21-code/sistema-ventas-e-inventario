@@ -17,7 +17,7 @@ export default function TrabajadoresPage() {
   const [editId, setEditId] = useState(null);
   const [pagoModal, setPagoModal] = useState(null);
   const [deleteIdTrab, setDeleteIdTrab] = useState(null);
-  const [form, setForm] = useState({ nombre: '', apellido: '', tipo: 'jornalero', telefono: '', email: '', sueldo_semanal: '', tarifa_por_unidad: '' });
+  const [form, setForm] = useState({ nombre: '', apellido: '', tipo: 'jornalero', telefono: '', email: '', sueldo_semanal: '', tarifa_por_unidad: '', sueldo_mensual: '' });
   const [pagoForm, setPagoForm] = useState({ trabajador_id: '', unidades: '', monto_pagado: '' });
   const { showToast } = useToast();
 
@@ -33,7 +33,7 @@ export default function TrabajadoresPage() {
   function abrirModal(t = null) {
     if (t) {
       setEditId(t.id);
-      setForm({ nombre: t.nombre, apellido: t.apellido, tipo: t.tipo, telefono: t.telefono || '', email: t.email || '', sueldo_semanal: t.sueldo_semanal, tarifa_por_unidad: t.tarifa_por_unidad });
+      setForm({ nombre: t.nombre, apellido: t.apellido, tipo: t.tipo, telefono: t.telefono || '', email: t.email || '', sueldo_semanal: t.sueldo_semanal, tarifa_por_unidad: t.tarifa_por_unidad, sueldo_mensual: t.sueldo_mensual || '' });
     } else {
       setEditId(null);
       setForm({ nombre: '', apellido: '', tipo: 'jornalero', telefono: '', email: '', sueldo_semanal: '', tarifa_por_unidad: '' });
@@ -44,7 +44,7 @@ export default function TrabajadoresPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const payload = { ...form, sueldo_semanal: Number(form.sueldo_semanal), tarifa_por_unidad: Number(form.tarifa_por_unidad) };
+        const payload = { ...form, sueldo_semanal: Number(form.sueldo_semanal), tarifa_por_unidad: Number(form.tarifa_por_unidad), sueldo_mensual: Number(form.sueldo_mensual) };
       if (editId) { await trabajadoresAPI.update(editId, payload); showToast('Trabajador actualizado', 'success'); }
       else { await trabajadoresAPI.create(payload); showToast('Trabajador registrado', 'success'); }
       setModalOpen(false); load();
@@ -200,22 +200,26 @@ export default function TrabajadoresPage() {
             <Input label="Nombre *" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} required />
             <Input label="Apellido *" value={form.apellido} onChange={e => setForm({ ...form, apellido: e.target.value })} required />
           </div>
-          <div className="space-y-1.5">
-            <label className="input-label">Tipo</label>
-            <select className="input-field" value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })}>
-              <option value="jornalero">Jornalero (sueldo fijo)</option>
-              <option value="destajista">Destajista (por unidad)</option>
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {form.tipo === 'jornalero' && (
-              <Input label="Sueldo Semanal (S/)" type="number" step="0.01" value={form.sueldo_semanal} onChange={e => setForm({ ...form, sueldo_semanal: e.target.value })} />
-            )}
-            {form.tipo === 'destajista' && (
-              <Input label="Tarifa por Unidad (S/)" type="number" step="0.01" value={form.tarifa_por_unidad} onChange={e => setForm({ ...form, tarifa_por_unidad: e.target.value })} />
-            )}
-            <Input label="Teléfono" value={form.telefono} onChange={e => setForm({ ...form, telefono: e.target.value })} />
-          </div>
+            <div className="space-y-1.5">
+              <label className="input-label">Tipo</label>
+              <select className="input-field" value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })}>
+                <option value="jornalero">Jornalero (sueldo fijo)</option>
+                <option value="destajista">Destajista (por unidad)</option>
+                <option value="encargado">Encargado (sueldo mensual + comisiones)</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {form.tipo === 'jornalero' && (
+                <Input label="Sueldo Semanal (S/)" type="number" step="0.01" value={form.sueldo_semanal} onChange={e => setForm({ ...form, sueldo_semanal: e.target.value })} />
+              )}
+              {form.tipo === 'destajista' && (
+                <Input label="Tarifa por Unidad (S/)" type="number" step="0.01" value={form.tarifa_por_unidad} onChange={e => setForm({ ...form, tarifa_por_unidad: e.target.value })} />
+              )}
+              {form.tipo === 'encargado' && (
+                <Input label="Sueldo Mensual (S/)" type="number" step="0.01" value={form.sueldo_mensual} onChange={e => setForm({ ...form, sueldo_mensual: e.target.value })} />
+              )}
+              <Input label="Teléfono" value={form.telefono} onChange={e => setForm({ ...form, telefono: e.target.value })} />
+            </div>
           <Input label="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="secondary" type="button" onClick={() => setModalOpen(false)}>Cancelar</Button>

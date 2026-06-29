@@ -326,6 +326,24 @@ async function initDatabase() {
 
   await query(`
     DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='trabajadores' AND column_name='sueldo_mensual') THEN
+        ALTER TABLE trabajadores ADD COLUMN sueldo_mensual DECIMAL(10,2) DEFAULT 0;
+        ALTER TABLE trabajadores DROP CONSTRAINT IF EXISTS trabajadores_tipo_check;
+        ALTER TABLE trabajadores ADD CONSTRAINT trabajadores_tipo_check CHECK (tipo IN ('jornalero', 'destajista', 'encargado'));
+      END IF;
+    END $$;
+  `);
+
+  await query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='ventas' AND column_name='trabajador_id') THEN
+        ALTER TABLE ventas ADD COLUMN trabajador_id INTEGER REFERENCES trabajadores(id) ON DELETE SET NULL;
+      END IF;
+    END $$;
+  `);
+
+  await query(`
+    DO $$ BEGIN
       IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='productos' AND column_name='proveedor') THEN
         ALTER TABLE productos ADD COLUMN proveedor VARCHAR(200);
         ALTER TABLE productos ADD COLUMN tipo VARCHAR(50);

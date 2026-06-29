@@ -62,6 +62,19 @@ exports.calcularPago = async (req, res) => {
       numUnidades = unidades || 0;
       totalPagar = Math.round(Number(trab[0].tarifa_por_unidad) * numUnidades * 100) / 100;
       tipoPago = 'produccion';
+    } else if (trab[0].tipo === 'encargado') {
+      const sueldoSemanal = (Number(trab[0].sueldo_mensual) || 0) / 4;
+      const { rows: ventas } = await query(`
+        SELECT COALESCE(SUM(dv.precio_base_unitario * dv.cantidad) * 0.02, 0) as total_comision,
+               COALESCE(SUM(CASE WHEN dv.precio_final_unitario > dv.precio_base_unitario
+                 THEN (dv.precio_final_unitario - dv.precio_base_unitario) * dv.cantidad * 0.5
+                 ELSE 0 END), 0) as total_sobreprecio
+        FROM ventas vv
+        JOIN detalle_ventas dv ON dv.venta_id = vv.id
+        WHERE vv.trabajador_id = $1 AND vv.fecha >= $2 AND vv.fecha <= $3 AND vv.estado = 'completada'
+      `, [trabajador_id, semana_inicio, semana_fin]);
+      totalPagar = Math.round((sueldoSemanal + Number(ventas[0].total_comision) + Number(ventas[0].total_sobreprecio)) * 100) / 100;
+      tipoPago = 'mixto';
     }
 
     const montoPagado = Number(monto_pagado) || totalPagar;
