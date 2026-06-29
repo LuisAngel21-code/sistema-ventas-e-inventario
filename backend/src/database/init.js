@@ -310,6 +310,13 @@ async function initDatabase() {
 
   await query(`
     DO $$ BEGIN
+      ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_rol_check;
+      ALTER TABLE usuarios ADD CONSTRAINT usuarios_rol_check CHECK (rol IN ('admin', 'vendedor', 'administradora'));
+    END $$;
+  `);
+
+  await query(`
+    DO $$ BEGIN
       IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='productos' AND column_name='proveedor') THEN
         ALTER TABLE productos ADD COLUMN proveedor VARCHAR(200);
         ALTER TABLE productos ADD COLUMN tipo VARCHAR(50);
