@@ -120,7 +120,7 @@ exports.create = async (req, res) => {
     totalVenta = Math.round(totalVenta * 100) / 100;
 
     const { rows: ventaResult } = await client.query(
-      'INSERT INTO ventas (vendedor_id, total, tipo_comprobante, metodo_pago, nro_comprobante, voucher_url, comprobante_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+      "INSERT INTO ventas (vendedor_id, total, tipo_comprobante, metodo_pago, nro_comprobante, voucher_url, comprobante_url, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, 'completada') RETURNING id",
       [vendedor_id, totalVenta, tipo_comprobante, metodo_pago, nro_comprobante, voucherUrl, comprobanteUrl]
     );
     const ventaId = ventaResult[0].id;

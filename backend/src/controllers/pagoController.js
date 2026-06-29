@@ -33,11 +33,6 @@ exports.calcular = async (req, res) => {
 
     const creados = [];
     for (const v of vendedores) {
-      const { rows: existente } = await query(
-        'SELECT id FROM pagos_vendedor WHERE vendedor_id = $1 AND semana_inicio = $2',
-        [v.id, semana_inicio]
-      );
-      if (existente.length > 0) continue;
 
       const { rows: ventas } = await query(`
         SELECT COALESCE(SUM(dv.subtotal), 0) as total_ventas,
@@ -55,12 +50,24 @@ exports.calcular = async (req, res) => {
       const totalSobreprecio = Number(d.total_sobreprecio) || 0;
       const totalPago = Math.round((Number(v.sueldo_fijo) + totalComision + totalSobreprecio) * 100) / 100;
 
-      await query(
-        'INSERT INTO pagos_vendedor (vendedor_id, semana_inicio, semana_fin, sueldo_base, total_comision, total_sobreprecio, total_pago) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [v.id, semana_inicio, semana_fin, v.sueldo_fijo, totalComision, totalSobreprecio, totalPago]
+      const { rows: existente } = await query(
+        'SELECT id FROM pagos_vendedor WHERE vendedor_id = $1 AND semana_inicio = $2',
+        [v.id, semana_inicio]
       );
 
-      creados.push({ vendedor: `${v.nombre} ${v.apellido}`, total: totalPago });
+      if (existente.length > 0) {
+        await query(
+          'UPDATE pagos_vendedor SET total_comision = $1, total_sobreprecio = $2, total_pago = $3 WHERE id = $4',
+          [totalComision, totalSobreprecio, totalPago, existente[0].id]
+        );
+        creados.push({ vendedor: `${v.nombre} ${v.apellido}`, total: totalPago, actualizado: true });
+      } else {
+        await query(
+          'INSERT INTO pagos_vendedor (vendedor_id, semana_inicio, semana_fin, sueldo_base, total_comision, total_sobreprecio, total_pago) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [v.id, semana_inicio, semana_fin, v.sueldo_fijo, totalComision, totalSobreprecio, totalPago]
+        );
+        creados.push({ vendedor: `${v.nombre} ${v.apellido}`, total: totalPago });
+      }
     }
 
     res.json({ message: `${creados.length} pago(s) calculado(s)`, pagos: creados });
