@@ -30,6 +30,25 @@ exports.create = async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
+exports.update = async (req, res) => {
+  try {
+    const { cliente, direccion, distrito, referencia, fecha_entrega, hora_programada, telefono, producto, observaciones, estado } = req.body;
+    const { rows } = await query(
+      'UPDATE entregas SET cliente=$1, direccion=$2, distrito=$3, referencia=$4, fecha_entrega=$5, hora_programada=$6, telefono=$7, producto=$8, observaciones=$9, estado=$10 WHERE id=$11 RETURNING *',
+      [cliente, direccion, distrito, referencia, fecha_entrega, hora_programada, telefono, producto, observaciones, estado, req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Entrega no encontrada' });
+    res.json({ entrega: rows[0], message: 'Entrega actualizada' });
+  } catch (error) { res.status(500).json({ error: error.message }); }
+};
+
+exports.remove = async (req, res) => {
+  try {
+    await query('DELETE FROM entregas WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Entrega eliminada' });
+  } catch (error) { res.status(500).json({ error: error.message }); }
+};
+
 exports.updateEstado = async (req, res) => {
   try {
     const { estado } = req.body;

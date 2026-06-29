@@ -17,6 +17,7 @@ export default function AgendaPage() {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const [editId, setEditId] = useState(null);
   const [mes, setMes] = useState(new Date().getMonth());
   const [año, setAño] = useState(new Date().getFullYear());
@@ -76,8 +77,7 @@ export default function AgendaPage() {
   }
 
   async function eliminar(id) {
-    if (!confirm('¿Eliminar evento?')) return;
-    try { await agendaAPI.remove(id); showToast('Evento eliminado', 'success'); loadAll(); } catch (err) { showToast(err.message, 'error'); }
+    try { await agendaAPI.remove(id); setDeleteId(null); showToast('Evento eliminado', 'success'); loadAll(); } catch (err) { showToast(err.message, 'error'); }
   }
 
   async function toggleCompletado(evento) {
@@ -149,7 +149,7 @@ export default function AgendaPage() {
             </div>
             <div className="flex gap-1">
               <Button variant="ghost" size="sm" onClick={() => abrirModal(e)}>✏️</Button>
-              <Button variant="ghost" size="sm" onClick={() => eliminar(e.id)}><X className="w-3.5 h-3.5 text-red-400" /></Button>
+              <Button variant="ghost" size="sm" onClick={() => setDeleteId(e.id)}><X className="w-3.5 h-3.5 text-red-400" /></Button>
             </div>
           </div>
         ))}
@@ -183,6 +183,14 @@ export default function AgendaPage() {
             <Button type="submit">{editId ? 'Actualizar' : 'Crear Evento'}</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Evento">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar este evento?</p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
+          <Button variant="danger" onClick={() => eliminar(deleteId)}>Eliminar</Button>
+        </div>
       </Modal>
     </div>
   );

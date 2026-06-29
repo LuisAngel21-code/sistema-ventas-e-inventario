@@ -134,6 +134,8 @@ export const configAPI = {
 export const entregasAPI = {
   getAll: (params) => request(`/api/entregas?${new URLSearchParams(params || {}).toString()}`),
   create: (data) => request('/api/entregas', { method: 'POST', body: data }),
+  update: (id, data) => request(`/api/entregas/${id}`, { method: 'PUT', body: data }),
+  remove: (id) => request(`/api/entregas/${id}`, { method: 'DELETE' }),
   updateEstado: (id, estado) => request(`/api/entregas/${id}/estado`, { method: 'PUT', body: { estado } }),
 };
 

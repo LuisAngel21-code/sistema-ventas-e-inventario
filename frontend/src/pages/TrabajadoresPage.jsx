@@ -16,6 +16,7 @@ export default function TrabajadoresPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [pagoModal, setPagoModal] = useState(null);
+  const [deleteIdTrab, setDeleteIdTrab] = useState(null);
   const [form, setForm] = useState({ nombre: '', apellido: '', tipo: 'jornalero', telefono: '', email: '', sueldo_semanal: '', tarifa_por_unidad: '' });
   const [pagoForm, setPagoForm] = useState({ trabajador_id: '', unidades: '', monto_pagado: '' });
   const { showToast } = useToast();
@@ -51,8 +52,7 @@ export default function TrabajadoresPage() {
   }
 
   async function eliminar(id) {
-    if (!confirm('¿Eliminar trabajador?')) return;
-    try { await trabajadoresAPI.remove(id); showToast('Trabajador eliminado', 'success'); load(); } catch (err) { showToast(err.message, 'error'); }
+    try { await trabajadoresAPI.remove(id); setDeleteIdTrab(null); showToast('Trabajador eliminado', 'success'); load(); } catch (err) { showToast(err.message, 'error'); }
   }
 
   function abrirPago(t) {
@@ -138,7 +138,7 @@ export default function TrabajadoresPage() {
                       <td className="table-cell text-right">
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="sm" onClick={() => abrirModal(t)}><Pencil className="w-3.5 h-3.5" /></Button>
-                          <Button variant="ghost" size="sm" onClick={() => eliminar(t.id)}><Trash2 className="w-3.5 h-3.5 text-red-400" /></Button>
+                          <Button variant="ghost" size="sm" onClick={() => setDeleteIdTrab(t.id)}><Trash2 className="w-3.5 h-3.5 text-red-400" /></Button>
                         </div>
                       </td>
                     </tr>
@@ -246,6 +246,14 @@ export default function TrabajadoresPage() {
           </form>
         </Modal>
       )}
+
+      <Modal open={!!deleteIdTrab} onClose={() => setDeleteIdTrab(null)} title="Eliminar Trabajador">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar este trabajador?</p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setDeleteIdTrab(null)}>Cancelar</Button>
+          <Button variant="danger" onClick={() => eliminar(deleteIdTrab)}>Eliminar</Button>
+        </div>
+      </Modal>
     </div>
   );
 }
