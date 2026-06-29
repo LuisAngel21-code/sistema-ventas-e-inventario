@@ -9,11 +9,11 @@ exports.getAll = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { nombre, apellido, tipo, telefono, email, sueldo_semanal, tarifa_por_unidad } = req.body;
+    const { nombre, apellido, tipo, telefono, email, sueldo_semanal, tarifa_por_unidad, sueldo_mensual } = req.body;
     if (!nombre || !apellido || !tipo) return res.status(400).json({ error: 'Nombre, apellido y tipo requeridos' });
     const { rows } = await query(
-      'INSERT INTO trabajadores (nombre, apellido, tipo, telefono, email, sueldo_semanal, tarifa_por_unidad) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
-      [nombre, apellido, tipo, telefono, email, sueldo_semanal || 0, tarifa_por_unidad || 0]
+      'INSERT INTO trabajadores (nombre, apellido, tipo, telefono, email, sueldo_semanal, tarifa_por_unidad, sueldo_mensual) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
+      [nombre, apellido, tipo, telefono, email, sueldo_semanal || 0, tarifa_por_unidad || 0, sueldo_mensual || 0]
     );
     res.status(201).json({ trabajador: rows[0], message: 'Trabajador registrado' });
   } catch (error) { res.status(500).json({ error: error.message }); }
@@ -21,10 +21,10 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const { nombre, apellido, tipo, telefono, email, sueldo_semanal, tarifa_por_unidad, activo } = req.body;
+    const { nombre, apellido, tipo, telefono, email, sueldo_semanal, tarifa_por_unidad, sueldo_mensual, activo } = req.body;
     const { rows } = await query(
-      'UPDATE trabajadores SET nombre=$1,apellido=$2,tipo=$3,telefono=$4,email=$5,sueldo_semanal=$6,tarifa_por_unidad=$7,activo=$8 WHERE id=$9 RETURNING *',
-      [nombre, apellido, tipo, telefono, email, sueldo_semanal, tarifa_por_unidad, activo ?? true, req.params.id]
+      'UPDATE trabajadores SET nombre=$1,apellido=$2,tipo=$3,telefono=$4,email=$5,sueldo_semanal=$6,tarifa_por_unidad=$7,sueldo_mensual=$8,activo=$9 WHERE id=$10 RETURNING *',
+      [nombre, apellido, tipo, telefono, email, sueldo_semanal, tarifa_por_unidad, sueldo_mensual || 0, activo ?? true, req.params.id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Trabajador no encontrado' });
     res.json({ trabajador: rows[0], message: 'Trabajador actualizado' });

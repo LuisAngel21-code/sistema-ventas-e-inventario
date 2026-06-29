@@ -336,6 +336,18 @@ async function initDatabase() {
 
   await query(`
     DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='pagos_trabajadores' AND column_name='sueldo_base') THEN
+        ALTER TABLE pagos_trabajadores ADD COLUMN sueldo_base DECIMAL(10,2) DEFAULT 0;
+        ALTER TABLE pagos_trabajadores ADD COLUMN total_comision DECIMAL(10,2) DEFAULT 0;
+        ALTER TABLE pagos_trabajadores ADD COLUMN total_sobreprecio DECIMAL(10,2) DEFAULT 0;
+        ALTER TABLE pagos_trabajadores ADD COLUMN adelanto DECIMAL(10,2) DEFAULT 0;
+        ALTER TABLE pagos_trabajadores ADD COLUMN fecha_adelanto TIMESTAMP;
+      END IF;
+    END $$;
+  `);
+
+  await query(`
+    DO $$ BEGIN
       IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='ventas' AND column_name='trabajador_id') THEN
         ALTER TABLE ventas ADD COLUMN trabajador_id INTEGER REFERENCES trabajadores(id) ON DELETE SET NULL;
       END IF;
