@@ -42,7 +42,7 @@ async function seed() {
 
   const hashAdmin2 = await bcrypt.hash('cams2026', 10);
   await query(
-    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (NULL, 'admincamas@2.com', $1, 'admin')",
+    "INSERT INTO usuarios (vendedor_id, username, password, rol) VALUES (NULL, 'admincamas@2.com', $1, 'administradora')",
     [hashAdmin2]
   );
 
