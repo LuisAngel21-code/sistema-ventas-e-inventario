@@ -214,7 +214,7 @@ export default function CajaPage() {
                   ))}
                   {movimientos.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="text-center py-8 text-gray-400">
+                      <td colSpan={8} className="text-center py-8 text-gray-400">
                         No hay movimientos aún
                       </td>
                     </tr>

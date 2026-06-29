@@ -56,8 +56,8 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    await query('DELETE FROM vendedores WHERE id = $1', [req.params.id]);
-    res.json({ message: 'Vendedor eliminado exitosamente' });
+    await query('UPDATE vendedores SET activo = false WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Vendedor desactivado' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
