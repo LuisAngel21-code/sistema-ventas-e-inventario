@@ -4,12 +4,13 @@ const { exportToExcel, addSheet } = require('../services/excelService');
 exports.productos = async (req, res) => {
   try {
     const { rows } = await query(
-      'SELECT codigo, nombre, categoria, costo, precio_base, stock, stock_minimo FROM productos WHERE activo = true ORDER BY nombre'
+      'SELECT codigo, nombre, categoria, medida, costo, precio_base, stock, stock_minimo FROM productos WHERE activo = true ORDER BY nombre'
     );
     const workbook = await exportToExcel(rows, [
       { header: 'Código', key: 'codigo', width: 15 },
       { header: 'Nombre', key: 'nombre', width: 35 },
       { header: 'Categoría', key: 'categoria', width: 20 },
+      { header: 'Medida', key: 'medida', width: 12 },
       { header: 'Costo', key: 'costo', width: 15 },
       { header: 'Precio Base', key: 'precio_base', width: 15 },
       { header: 'Stock', key: 'stock', width: 10 },
@@ -58,7 +59,7 @@ exports.inventario = async (req, res) => {
   try {
     const { tipo } = req.query;
     const { rows: productos } = await query(
-      "SELECT codigo, nombre, categoria, costo, precio_base, stock, stock_minimo, CASE WHEN stock <= stock_minimo THEN 'Bajo' ELSE 'Normal' END as estado FROM productos WHERE activo = true ORDER BY nombre"
+      "SELECT codigo, nombre, categoria, medida, costo, precio_base, stock, stock_minimo, CASE WHEN stock <= stock_minimo THEN 'Bajo' ELSE 'Normal' END as estado FROM productos WHERE activo = true ORDER BY nombre"
     );
     let sqlMov = 'SELECT im.created_at as fecha, p.nombre as producto, im.tipo, im.cantidad, im.referencia FROM inventario_movimientos im JOIN productos p ON im.producto_id = p.id WHERE 1=1';
     const params = []; let idx = 1;
@@ -72,6 +73,7 @@ exports.inventario = async (req, res) => {
       { header: 'Código', key: 'codigo', width: 15 },
       { header: 'Nombre', key: 'nombre', width: 35 },
       { header: 'Categoría', key: 'categoria', width: 20 },
+      { header: 'Medida', key: 'medida', width: 12 },
       { header: 'Costo', key: 'costo', width: 15 },
       { header: 'Precio Base', key: 'precio_base', width: 15 },
       { header: 'Stock', key: 'stock', width: 10 },

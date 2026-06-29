@@ -121,6 +121,7 @@ export default function InventarioPage() {
                     <th className="table-header">Código</th>
                     <th className="table-header">Producto</th>
                     <th className="table-header">Categoría</th>
+                    <th className="table-header">Medida</th>
                     <th className="table-header text-right">Costo</th>
                     <th className="table-header text-right">Precio Base</th>
                     <th className="table-header text-right">Stock</th>
@@ -138,6 +139,7 @@ export default function InventarioPage() {
                         <td className="table-cell font-mono text-xs text-gray-500">{p.codigo}</td>
                         <td className="table-cell font-medium text-gray-900">{p.nombre}</td>
                         <td className="table-cell text-gray-500">{p.categoria || '—'}</td>
+                        <td className="table-cell text-gray-500">{p.medida || '—'}</td>
                         <td className="table-cell text-right text-gray-500">S/ {Number(p.costo).toFixed(2)}</td>
                         <td className="table-cell text-right">S/ {Number(p.precio_base).toFixed(2)}</td>
                         <td className={`table-cell text-right font-bold ${estado === 'sin_stock' ? 'text-red-600' : estado === 'bajo' ? 'text-amber-600' : 'text-gray-900'}`}>

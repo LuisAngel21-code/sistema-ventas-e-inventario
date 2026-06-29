@@ -11,7 +11,7 @@ import { useToast } from '../context/ToastContext';
 
 const emptyProduct = {
   codigo: '', nombre: '', costo: '', categoria: '',
-  marca_id: '', proveedor: '', tipo: '',
+  marca_id: '', proveedor: '', tipo: '', medida: '',
   stock: 0, stock_minimo: 0, precio_venta: '',
 };
 
@@ -65,6 +65,7 @@ export default function ProductosPage() {
         marca_id: prod.marca_id || '',
         proveedor: prod.proveedor || '',
         tipo: prod.tipo || '',
+        medida: prod.medida || '',
         stock: prod.stock || 0,
         stock_minimo: prod.stock_minimo || 0,
         precio_venta: prod.precio_venta || '',
@@ -164,6 +165,7 @@ export default function ProductosPage() {
                   <th className="table-header">Código</th>
                   <th className="table-header">Nombre</th>
                   <th className="table-header">Categoría</th>
+                  <th className="table-header">Medida</th>
                   <th className="table-header">Marca</th>
                   <th className="table-header">Proveedor</th>
                   <th className="table-header text-right">Costo</th>
@@ -179,6 +181,7 @@ export default function ProductosPage() {
                     <td className="table-cell font-mono text-xs text-gray-500">{p.codigo}</td>
                     <td className="table-cell font-medium text-gray-900">{p.nombre}</td>
                     <td className="table-cell text-gray-500">{p.categoria || '—'}</td>
+                    <td className="table-cell text-gray-500">{p.medida || '—'}</td>
                     <td className="table-cell text-gray-500">{p.marca_id ? marcas.find(m => m.id === p.marca_id)?.nombre || '—' : '—'}</td>
                     <td className="table-cell text-gray-500">{p.proveedor || '—'}</td>
                     <td className="table-cell text-right text-gray-500">S/ {Number(p.costo).toFixed(2)}</td>
@@ -213,7 +216,7 @@ export default function ProductosPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="text-center py-12 text-gray-400">
+                    <td colSpan={11} className="text-center py-12 text-gray-400">
                       <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       No hay productos
                     </td>
@@ -281,6 +284,18 @@ export default function ProductosPage() {
           <div className="grid grid-cols-2 gap-4">
             <Input label="Proveedor" value={form.proveedor}
               onChange={(e) => setForm({ ...form, proveedor: e.target.value })} />
+            <div className="space-y-1.5">
+              <label className="input-label">Medida</label>
+              <select className="input-field" value={form.medida}
+                onChange={(e) => setForm({ ...form, medida: e.target.value })}>
+                <option value="">Seleccionar...</option>
+                <option value="1plz">1plz</option>
+                <option value="1.5 plz">1.5 plz</option>
+                <option value="2plz">2plz</option>
+                <option value="Queen">Queen</option>
+                <option value="King Size">King Size</option>
+              </select>
+            </div>
             {form.categoria?.toLowerCase() === 'camas' && (
               <div className="space-y-1.5">
                 <label className="input-label">Tipo</label>

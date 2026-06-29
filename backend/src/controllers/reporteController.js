@@ -183,7 +183,7 @@ exports.reporteInventario = async (req, res) => {
   try {
     const { tipo } = req.query;
     const { rows: productos } = await query(
-      'SELECT id, codigo, nombre, costo, precio_base, stock, stock_minimo FROM productos WHERE activo = true ORDER BY nombre'
+      'SELECT id, codigo, nombre, costo, precio_base, stock, stock_minimo, medida FROM productos WHERE activo = true ORDER BY nombre'
     );
 
     let sqlMov = `SELECT im.*, p.nombre AS producto_nombre FROM inventario_movimientos im JOIN productos p ON im.producto_id = p.id WHERE 1=1`;

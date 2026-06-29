@@ -234,8 +234,8 @@ function generarReporteInventario(doc, productos, movimientos) {
   doc.moveDown(1);
 
   const tableTop = doc.y;
-  const colWidths = [25, 50, 80, 50, 50, 50];
-  const headers = ['#', 'Código', 'Producto', 'Costo', 'Stock', 'Estado'];
+  const colWidths = [25, 50, 65, 45, 50, 50, 50];
+  const headers = ['#', 'Código', 'Producto', 'Medida', 'Costo', 'Stock', 'Estado'];
 
   doc.rect(margin, tableTop, usableWidth, 18).fill('#2c3e50');
   doc.fillColor('#fff');
@@ -268,6 +268,7 @@ function generarReporteInventario(doc, productos, movimientos) {
       String(idx + 1),
       p.codigo || '---',
       (p.nombre || '').substring(0, 18),
+      p.medida || '—',
       `S/ ${Number(p.costo).toFixed(2)}`,
       String(p.stock),
       isLowStock ? 'Stock Bajo!' : 'Normal'
