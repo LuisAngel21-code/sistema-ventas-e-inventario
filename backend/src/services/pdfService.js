@@ -97,12 +97,20 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
 
   doc.text(`Sueldo Fijo:`, margin + 15, sy);
   doc.text(`S/ ${resumen.sueldoFijo.toFixed(2)}`, margin + usableWidth - 100, sy, { width: 90, align: 'right' });
-  sy += lineHeight + 5;
+  sy += lineHeight;
 
+  if (resumen.adelanto > 0) {
+    doc.text(`Adelanto:`, margin + 15, sy);
+    doc.text(`- S/ ${resumen.adelanto.toFixed(2)}`, margin + usableWidth - 100, sy, { width: 90, align: 'right' });
+    sy += lineHeight;
+  }
+  sy += 5;
+
+  const neto = Math.max(0, resumen.totalAPagar - (resumen.adelanto || 0));
   doc.rect(margin, sy - 5, usableWidth, 30).fill('#2c3e50');
   doc.fillColor('#fff').font('Helvetica-Bold').fontSize(13);
   doc.text(`TOTAL A PAGAR:`, margin + 15, sy + 5);
-  doc.text(`S/ ${resumen.totalAPagar.toFixed(2)}`, margin + usableWidth - 100, sy + 5, { width: 90, align: 'right' });
+  doc.text(`S/ ${neto.toFixed(2)}`, margin + usableWidth - 100, sy + 5, { width: 90, align: 'right' });
 
   doc.fillColor('#666').font('Helvetica').fontSize(8);
   doc.text('Mueblería Cams — Sistema de Gestión', margin, doc.page.height - 50, { align: 'center', width: usableWidth });

@@ -109,3 +109,17 @@ exports.marcarPagado = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.adelanto = async (req, res) => {
+  try {
+    const { monto } = req.body;
+    const { rows } = await query(
+      'UPDATE pagos_vendedor SET adelanto = $1 WHERE id = $2 RETURNING *',
+      [monto || 0, req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Pago no encontrado' });
+    res.json({ pago: rows[0], message: 'Adelanto registrado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

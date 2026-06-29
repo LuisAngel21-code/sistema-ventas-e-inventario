@@ -173,6 +173,7 @@ export const pagosAPI = {
   calcular: (inicio, fin) => request(`/api/pagos/calcular?semana_inicio=${inicio}&semana_fin=${fin}`, { method: 'POST' }),
   marcarPagado: (id) => request(`/api/pagos/${id}/pagar`, { method: 'PUT' }),
   remove: (id) => request(`/api/pagos/${id}`, { method: 'DELETE' }),
+  adelanto: (id, monto) => request(`/api/pagos/${id}/adelanto`, { method: 'PUT', body: { monto } }),
 };
 
 export const categoriasAPI = {

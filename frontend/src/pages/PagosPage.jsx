@@ -12,6 +12,8 @@ export default function PagosPage() {
   const [loading, setLoading] = useState(true);
   const [calculando, setCalculando] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [adelantoEdit, setAdelantoEdit] = useState(null);
+  const [adelantoMonto, setAdelantoMonto] = useState('');
   const { showToast } = useToast();
 
   const today = new Date();
@@ -52,6 +54,18 @@ export default function PagosPage() {
     try {
       await pagosAPI.marcarPagado(id);
       showToast('Pago marcado como pagado', 'success');
+      load();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function registrarAdelanto(id) {
+    try {
+      await pagosAPI.adelanto(id, Number(adelantoMonto) || 0);
+      showToast('Adelanto registrado', 'success');
+      setAdelantoEdit(null);
+      setAdelantoMonto('');
       load();
     } catch (err) {
       showToast(err.message, 'error');
@@ -147,20 +161,55 @@ export default function PagosPage() {
                   <p className="font-semibold text-amber-600">S/ {Number(p.total_sobreprecio).toFixed(2)}</p>
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                <div>
-                  <p className="text-xs text-gray-500">Total a pagar</p>
-                  <p className="text-xl font-display font-bold text-primary-700">S/ {Number(p.total_pago).toFixed(2)}</p>
+              <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Total</span>
+                  <span className="font-semibold text-primary-700">S/ {Number(p.total_pago).toFixed(2)}</span>
                 </div>
-                {p.estado !== 'pagado' && (
-                  <Button variant="primary" onClick={() => marcarPagado(p.id)} icon={CheckCircle}>
-                    Marcar Pagado
-                  </Button>
-                )}
-                {p.estado === 'pagado' && (
-                  <p className="text-xs text-gray-400">
-                    Pagado: {new Date(p.pagado_en).toLocaleDateString('es-PE')}
-                  </p>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Adelanto</span>
+                  <div className="flex items-center gap-1">
+                    {adelantoEdit === p.id ? (
+                      <>
+                        <input type="number" step="0.01" className="input-field w-20 text-sm py-0.5"
+                          value={adelantoMonto}
+                          onChange={e => setAdelantoMonto(e.target.value)}
+                          autoFocus />
+                        <button onClick={() => registrarAdelanto(p.id)}
+                          className="text-xs text-primary-600 hover:text-primary-700 font-medium">OK</button>
+                        <button onClick={() => setAdelantoEdit(null)}
+                          className="text-xs text-gray-400 hover:text-gray-600">✕</button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-red-600 font-medium">- S/ {Number(p.adelanto || 0).toFixed(2)}</span>
+                        {p.estado !== 'pagado' && (
+                          <button onClick={() => { setAdelantoEdit(p.id); setAdelantoMonto(p.adelanto || ''); }}
+                            className="text-xs text-primary-600 hover:text-primary-700 ml-1">
+                            {Number(p.adelanto || 0) > 0 ? 'Editar' : 'Añadir'}
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+                  <span className="text-sm font-display font-semibold text-gray-900">A pagar</span>
+                  <span className="text-xl font-display font-bold text-primary-700">
+                    S/ {Math.max(0, Number(p.total_pago) - Number(p.adelanto || 0)).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-end mt-3">
+                {p.estado !== 'pagado' ? (
+                  <div className="flex gap-2">
+                    <Button variant="primary" onClick={() => marcarPagado(p.id)} icon={CheckCircle}>Marcar Pagado</Button>
+                    <button onClick={() => setDeleteId(p.id)} className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Eliminar pago">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400">Pagado: {new Date(p.pagado_en).toLocaleDateString('es-PE')}</p>
                 )}
               </div>
             </div>

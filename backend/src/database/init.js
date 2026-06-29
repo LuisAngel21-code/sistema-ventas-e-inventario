@@ -291,6 +291,14 @@ async function initDatabase() {
 
   await query(`CREATE INDEX IF NOT EXISTS idx_pagos_trabajador ON pagos_trabajadores(trabajador_id);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_entregas_fecha ON entregas(fecha_entrega);`);
+  await query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='pagos_vendedor' AND column_name='adelanto') THEN
+        ALTER TABLE pagos_vendedor ADD COLUMN adelanto DECIMAL(10,2) DEFAULT 0;
+      END IF;
+    END $$;
+  `);
+
   await query(`CREATE INDEX IF NOT EXISTS idx_agenda_fecha ON agenda(fecha);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_ventas_vendedor ON ventas(vendedor_id);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_ventas_fecha ON ventas(fecha);`);
