@@ -119,11 +119,11 @@ export default function PagosPage() {
       </div>
 
       {loading ? <Spinner className="h-48" /> : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {pagos.map(p => {
             const neto = Math.max(0, Number(p.total_pago) - Number(p.adelanto || 0));
             return (
-            <div key={p.id} className="stat-card p-5 flex flex-col">
+            <div key={p.id} className="stat-card p-4 flex flex-col min-h-[260px]">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 bg-emerald-50 rounded-xl flex items-center justify-center">
@@ -150,32 +150,32 @@ export default function PagosPage() {
               </div>
 
               <div className="flex border border-gray-100 rounded-lg divide-x divide-gray-100 text-sm mb-4">
-                <div className="flex-1 p-3 text-center">
+                <div className="flex-1 py-2.5 text-center">
                   <p className="text-xs text-gray-400 mb-0.5">Base</p>
-                  <p className="font-semibold text-gray-900">S/ {Number(p.sueldo_base).toFixed(2)}</p>
+                  <p className="font-semibold text-gray-900 tabular-nums">S/&nbsp;{Number(p.sueldo_base).toFixed(2)}</p>
                 </div>
-                <div className="flex-1 p-3 text-center">
+                <div className="flex-1 py-2.5 text-center">
                   <p className="text-xs text-gray-400 mb-0.5">Comisión 2%</p>
-                  <p className="font-semibold text-emerald-600">S/ {Number(p.total_comision).toFixed(2)}</p>
+                  <p className="font-semibold text-emerald-600 tabular-nums">S/&nbsp;{Number(p.total_comision).toFixed(2)}</p>
                 </div>
-                <div className="flex-1 p-3 text-center">
+                <div className="flex-1 py-2.5 text-center">
                   <p className="text-xs text-gray-400 mb-0.5">50% Sobrep.</p>
-                  <p className="font-semibold text-amber-600">S/ {Number(p.total_sobreprecio).toFixed(2)}</p>
+                  <p className="font-semibold text-amber-600 tabular-nums">S/&nbsp;{Number(p.total_sobreprecio).toFixed(2)}</p>
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-3.5 space-y-2 text-sm mb-4">
+              <div className="bg-gray-50 rounded-lg px-3.5 py-3 space-y-1.5 text-sm mb-3">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500">Total bruto</span>
-                  <span className="font-medium text-gray-900">S/ {Number(p.total_pago).toFixed(2)}</span>
+                  <span className="font-medium text-gray-900 tabular-nums">S/&nbsp;{Number(p.total_pago).toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500">Adelanto</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {adelantoEdit === p.id ? (
                       <div className="flex items-center gap-1">
                         <input type="number" step="0.01"
-                          className="w-20 px-2 py-1 text-xs border border-gray-200 rounded text-right"
+                          className="w-16 px-2 py-1 text-xs border border-gray-200 rounded text-right tabular-nums"
                           value={adelantoMonto}
                           onChange={e => setAdelantoMonto(e.target.value)}
                           autoFocus />
@@ -186,10 +186,10 @@ export default function PagosPage() {
                       </div>
                     ) : (
                       <>
-                        <span className="text-red-600 font-medium">- S/ {Number(p.adelanto || 0).toFixed(2)}</span>
+                        <span className="text-red-600 font-medium tabular-nums">-&nbsp;S/&nbsp;{Number(p.adelanto || 0).toFixed(2)}</span>
                         {p.estado !== 'pagado' && (
                           <button onClick={() => { setAdelantoEdit(p.id); setAdelantoMonto(p.adelanto || ''); }}
-                            className="text-xs text-primary-600 hover:text-primary-700 underline">
+                            className="text-xs text-primary-600 hover:text-primary-700 underline ml-0.5">
                             {Number(p.adelanto || 0) > 0 ? 'Editar' : 'Añadir'}
                           </button>
                         )}
@@ -197,17 +197,20 @@ export default function PagosPage() {
                     )}
                   </div>
                 </div>
-                <div className="border-t border-gray-200 pt-2 flex items-center justify-between">
+                <div className="border-t border-gray-200 pt-1.5 flex items-center justify-between">
                   <span className="text-sm font-display font-semibold text-gray-900">Neto a pagar</span>
-                  <span className="text-lg font-display font-bold text-primary-700">S/ {neto.toFixed(2)}</span>
+                  <span className="text-base font-display font-bold text-primary-700 tabular-nums">S/&nbsp;{neto.toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="mt-auto flex justify-end">
                 {p.estado !== 'pagado' ? (
-                  <Button variant="primary" onClick={() => marcarPagado(p.id)} icon={CheckCircle}>
+                  <button onClick={() => marcarPagado(p.id)}
+                    className="group inline-flex items-center gap-1.5 px-4 py-2 bg-primary-700 text-white text-sm font-medium rounded-lg
+                      hover:bg-primary-800 active:scale-[0.97] transition-all duration-150 shadow-sm hover:shadow-md">
+                    <CheckCircle className="w-4 h-4 transition-transform duration-150 group-hover:scale-110" />
                     Marcar Pagado
-                  </Button>
+                  </button>
                 ) : (
                   <p className="text-xs text-gray-400 flex items-center gap-1">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
