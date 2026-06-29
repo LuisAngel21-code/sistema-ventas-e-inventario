@@ -59,11 +59,15 @@ exports.calcular = async (req, res) => {
       const totalPago = Math.round((Number(v.sueldo_fijo) + totalComision + totalSobreprecio) * 100) / 100;
 
       const { rows: existente } = await query(
-        'SELECT id FROM pagos_vendedor WHERE vendedor_id = $1 AND semana_inicio = $2',
+        "SELECT id, estado FROM pagos_vendedor WHERE vendedor_id = $1 AND semana_inicio = $2",
         [v.id, semana_inicio]
       );
 
       if (existente.length > 0) {
+        if (existente[0].estado === 'pagado') {
+          creados.push({ vendedor: `${v.nombre} ${v.apellido}`, total: totalPago, pagado: true });
+          continue;
+        }
         await query(
           'UPDATE pagos_vendedor SET total_comision = $1, total_sobreprecio = $2, total_pago = $3 WHERE id = $4',
           [totalComision, totalSobreprecio, totalPago, existente[0].id]
