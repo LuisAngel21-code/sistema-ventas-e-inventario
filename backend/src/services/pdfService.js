@@ -71,7 +71,8 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
 
   const summaryTop = yPos + 10;
 
-  doc.rect(margin, summaryTop, usableWidth, 130).fillAndStroke('#f8f9fa', '#2c3e50');
+  const boxHeight = (resumen.adelanto || 0) > 0 ? 155 : 130;
+  doc.rect(margin, summaryTop, usableWidth, boxHeight).fillAndStroke('#f8f9fa', '#2c3e50');
   doc.fillColor('#2c3e50').font('Helvetica-Bold').fontSize(12)
     .text('RESUMEN DE PAGO', margin + 10, summaryTop + 10);
 
@@ -100,7 +101,8 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
   sy += lineHeight;
 
   if (resumen.adelanto > 0) {
-    doc.text(`Adelanto:`, margin + 15, sy);
+    const fechaAdelanto = resumen.fechaAdelanto ? new Date(resumen.fechaAdelanto).toLocaleDateString('es-PE') : '';
+    doc.text(`Adelanto${fechaAdelanto ? ' (' + fechaAdelanto + ')' : ''}:`, margin + 15, sy);
     doc.text(`- S/ ${resumen.adelanto.toFixed(2)}`, margin + usableWidth - 100, sy, { width: 90, align: 'right' });
     sy += lineHeight;
   }

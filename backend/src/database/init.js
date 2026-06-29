@@ -295,6 +295,7 @@ async function initDatabase() {
     DO $$ BEGIN
       IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='pagos_vendedor' AND column_name='adelanto') THEN
         ALTER TABLE pagos_vendedor ADD COLUMN adelanto DECIMAL(10,2) DEFAULT 0;
+        ALTER TABLE pagos_vendedor ADD COLUMN fecha_adelanto TIMESTAMP;
       END IF;
     END $$;
   `);

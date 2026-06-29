@@ -58,11 +58,12 @@ exports.reportePorVendedor = async (req, res) => {
     const vendedor = { ...vendedores[0], sueldo_fijo: Number(vendedores[0].sueldo_fijo) || 350 };
 
     const { rows: pagoData } = await query(
-      "SELECT COALESCE(SUM(adelanto), 0) as total_adelanto FROM pagos_vendedor WHERE vendedor_id = $1",
+      "SELECT COALESCE(SUM(adelanto), 0) as total_adelanto, MAX(fecha_adelanto) as ultima_fecha FROM pagos_vendedor WHERE vendedor_id = $1 AND adelanto > 0",
       [id]
     );
     const adelantoTotal = Number(pagoData[0]?.total_adelanto) || 0;
     resumen.adelanto = adelantoTotal;
+    resumen.fechaAdelanto = pagoData[0]?.ultima_fecha || null;
 
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 

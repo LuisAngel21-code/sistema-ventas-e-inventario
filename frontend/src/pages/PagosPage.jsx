@@ -186,7 +186,12 @@ export default function PagosPage() {
                       </div>
                     ) : (
                       <>
-                        <span className="text-red-600 font-medium tabular-nums">-&nbsp;S/&nbsp;{Number(p.adelanto || 0).toFixed(2)}</span>
+                        <span className="text-red-600 font-medium tabular-nums">
+                          -&nbsp;S/&nbsp;{Number(p.adelanto || 0).toFixed(2)}
+                          {p.fecha_adelanto && (
+                            <span className="text-xs text-gray-400 ml-1">({new Date(p.fecha_adelanto).toLocaleDateString('es-PE')})</span>
+                          )}
+                        </span>
                         {p.estado !== 'pagado' && (
                           <button onClick={() => { setAdelantoEdit(p.id); setAdelantoMonto(p.adelanto || ''); }}
                             className="text-xs text-primary-600 hover:text-primary-700 underline ml-0.5">
