@@ -6,10 +6,6 @@ async function getBalanceData(desde, hasta) {
     query("SELECT COALESCE(SUM(total), 0) as total FROM ventas WHERE fecha >= $1 AND fecha <= $2 AND estado = 'completada'", [desde, hasta]),
   ]);
 
-  const [{ rows: ingresosCaja }] = await Promise.all([
-    query("SELECT COALESCE(SUM(cm.monto), 0) as total FROM caja_movimientos cm JOIN caja_sesiones cs ON cm.sesion_id = cs.id WHERE cm.tipo = 'ingreso' AND cs.fecha_apertura >= $1 AND cs.fecha_apertura <= $2", [desde, hasta]),
-  ]);
-
   const [{ rows: comisiones }] = await Promise.all([
     query("SELECT COALESCE(SUM(total_pago), 0) as total FROM pagos_vendedor WHERE estado = 'pagado' AND pagado_en >= $1 AND pagado_en <= $2", [desde, hasta]),
   ]);
@@ -24,7 +20,6 @@ async function getBalanceData(desde, hasta) {
 
   return {
     ventas: Number(ventas[0].total),
-    otrosIngresos: Number(ingresosCaja[0].total),
     comisiones: Number(comisiones[0].total),
     gastosCaja: Number(gastosReales[0].total),
     retiros: Number(retiros[0].total),
@@ -37,13 +32,13 @@ exports.getBalance = async (req, res) => {
     if (!desde || !hasta) return res.status(400).json({ error: 'Parámetros desde y hasta requeridos' });
 
     const d = await getBalanceData(desde, hasta);
-    const totalIngresos = d.ventas + d.otrosIngresos;
+    const totalIngresos = d.ventas;
     const totalEgresos = d.comisiones + d.gastosCaja;
     const ganancia = totalIngresos - totalEgresos;
     const margen = totalIngresos > 0 ? Math.round((ganancia / totalIngresos) * 10000) / 100 : 0;
 
     res.json({
-      ingresos: { ventas: d.ventas, otros_ingresos: d.otrosIngresos, total: totalIngresos },
+      ingresos: { ventas: d.ventas, total: totalIngresos },
       egresos: { comisiones: d.comisiones, gastos_caja: d.gastosCaja, total: totalEgresos },
       retiros: d.retiros,
       resultado: { ganancia, margen },
@@ -60,7 +55,7 @@ exports.exportPdf = async (req, res) => {
 
     const d = await getBalanceData(desde, hasta);
     const montoAlquiler = Number(alquiler) || 0;
-    const totalIngresos = d.ventas + d.otrosIngresos;
+    const totalIngresos = d.ventas;
     const totalEgresos = d.comisiones + d.gastosCaja + montoAlquiler;
     const ganancia = totalIngresos - totalEgresos;
     const margen = totalIngresos > 0 ? Math.round((ganancia / totalIngresos) * 10000) / 100 : 0;
@@ -98,12 +93,6 @@ exports.exportPdf = async (req, res) => {
     doc.fillColor('#333').font('Helvetica').fontSize(10);
     doc.text('Ventas', m + 10, y + 4);
     doc.text(`S/ ${d.ventas.toFixed(2)}`, m + w - 10, y + 4, { align: 'right', width: 90 });
-    y += 16;
-
-    doc.rect(m, y, w, 16).fill('#fff');
-    doc.fillColor('#333').font('Helvetica').fontSize(10);
-    doc.text('Otros ingresos', m + 10, y + 4);
-    doc.text(`S/ ${d.otrosIngresos.toFixed(2)}`, m + w - 10, y + 4, { align: 'right', width: 90 });
     y += 16;
 
     doc.rect(m, y, w, 18).fill('#dcfce7');

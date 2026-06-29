@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { balanceAPI, configAPI } from '../services/api';
-import { TrendingUp, TrendingDown, DollarSign, Receipt, ShoppingCart, Calendar, Home, Save, FileText } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Calendar, Home, Save, FileText } from 'lucide-react';
 import { getDownloadUrl } from '../services/api';
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
@@ -141,10 +141,6 @@ export default function Dashboard() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 flex items-center gap-2"><ShoppingCart className="w-4 h-4" /> Ventas</span>
                   <span className="font-semibold">S/ {balance.ingresos.ventas.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 flex items-center gap-2"><Receipt className="w-4 h-4" /> Otros ingresos</span>
-                  <span className="font-semibold">S/ {balance.ingresos.otros_ingresos.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-gray-100 pt-2 flex justify-between text-sm font-display font-bold text-emerald-700">
                   <span>Total Ingresos</span>
