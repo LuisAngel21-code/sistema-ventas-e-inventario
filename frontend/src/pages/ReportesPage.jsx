@@ -1,27 +1,26 @@
 import { useState, useEffect } from 'react';
-import { vendedoresAPI, reportesAPI } from '../services/api';
+import { pagosAPI, reportesAPI } from '../services/api';
 import { FileText, Download, Calendar, User } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
-import Select from '../components/ui/Select';
 import Button from '../components/ui/Button';
 import { useToast } from '../context/ToastContext';
 
 export default function ReportesPage() {
-  const [vendedores, setVendedores] = useState([]);
+  const [personal, setPersonal] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filtros, setFiltros] = useState({ vendedor_id: '', desde: '', hasta: '' });
+  const [filtros, setFiltros] = useState({ persona_id: '', fuente: '', desde: '', hasta: '' });
   const { showToast } = useToast();
 
   useEffect(() => {
-    vendedoresAPI.getAll()
-      .then(v => { setVendedores(v); setLoading(false); })
+    pagosAPI.personal()
+      .then(p => { setPersonal(p); setLoading(false); })
       .catch(console.error);
   }, []);
 
   async function descargar(tipo, params = {}) {
     let url;
-    if (tipo === 'vendedor') {
-      url = reportesAPI.vendedor(params.id, params.desde || '', params.hasta || '');
+    if (tipo === 'trabajador') {
+      url = reportesAPI.trabajador(params.id, params.fuente, params.desde || '', params.hasta || '');
     } else if (tipo === 'general') {
       url = reportesAPI.general(params.desde || '', params.hasta || '');
     } else {
@@ -51,26 +50,52 @@ export default function ReportesPage() {
     }
   }
 
+  const grouped = personal.reduce((acc, p) => {
+    const key = p.cargo === 'Vendedor' ? 'Vendedores' : 'Otros';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(p);
+    return acc;
+  }, {});
+
   const reportes = [
     {
-      title: 'Reporte por Vendedor',
-      desc: 'Ventas detalladas, comisiones y sobreprecio por vendedor',
+      title: 'Reporte por Trabajador',
+      desc: 'Ventas detalladas, comisiones y sobreprecio',
       icon: User,
       color: 'bg-blue-50 text-blue-600',
-      tipo: 'vendedor',
-      params: { id: filtros.vendedor_id, desde: filtros.desde, hasta: filtros.hasta },
+      tipo: 'trabajador',
+      params: { id: filtros.persona_id, fuente: filtros.fuente, desde: filtros.desde, hasta: filtros.hasta },
       extra: (
-        <Select
-          placeholder="Seleccionar vendedor..."
-          value={filtros.vendedor_id}
-          onChange={(e) => setFiltros({ ...filtros, vendedor_id: e.target.value })}
-          options={vendedores.map(v => ({ value: v.id, label: `${v.nombre} ${v.apellido}` }))}
-        />
+        <div className="space-y-1.5">
+          <label className="input-label">Seleccionar persona</label>
+          <select className="input-field"
+            value={filtros.persona_id ? `${filtros.fuente}-${filtros.persona_id}` : ''}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val) {
+                const [fuente, id] = val.split('-');
+                setFiltros({ ...filtros, persona_id: id, fuente });
+              } else {
+                setFiltros({ ...filtros, persona_id: '', fuente: '' });
+              }
+            }}>
+            <option value="">Seleccionar...</option>
+            {Object.entries(grouped).map(([grupo, personas]) => (
+              <optgroup key={grupo} label={grupo}>
+                {personas.map(p => (
+                  <option key={`${p.cargo}-${p.id}`} value={`${p.cargo === 'Vendedor' ? 'vendedor' : 'trabajador'}-${p.id}`}>
+                    {p.nombre} {p.apellido}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
       ),
     },
     {
       title: 'Reporte General',
-      desc: 'Resumen global de ventas, comisiones y pagos por vendedor',
+      desc: 'Resumen global de ventas, comisiones y pagos',
       icon: FileText,
       color: 'bg-emerald-50 text-emerald-600',
       tipo: 'general',
@@ -95,33 +120,24 @@ export default function ReportesPage() {
         <p className="page-subtitle">Generación de reportes y balances</p>
       </div>
 
-      {/* Date filters */}
       <div className="card-page p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="input-label">
-              <Calendar className="w-3.5 h-3.5 inline mr-1" />
-              Desde
-            </label>
+            <label className="input-label"><Calendar className="w-3.5 h-3.5 inline mr-1" /> Desde</label>
             <input type="date" className="input-field" value={filtros.desde}
               onChange={(e) => setFiltros({ ...filtros, desde: e.target.value })} />
           </div>
           <div>
-            <label className="input-label">
-              <Calendar className="w-3.5 h-3.5 inline mr-1" />
-              Hasta
-            </label>
+            <label className="input-label"><Calendar className="w-3.5 h-3.5 inline mr-1" /> Hasta</label>
             <input type="date" className="input-field" value={filtros.hasta}
               onChange={(e) => setFiltros({ ...filtros, hasta: e.target.value })} />
           </div>
         </div>
       </div>
 
-      {/* Report cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {reportes.map((r) => {
           const Icon = r.icon;
-
           return (
             <div key={r.tipo} className="stat-card p-5 flex flex-col">
               <div className="flex items-start gap-3 mb-4">
@@ -133,17 +149,11 @@ export default function ReportesPage() {
                   <p className="text-xs text-gray-500 mt-0.5">{r.desc}</p>
                 </div>
               </div>
-
-              <div className="flex-1 space-y-3">
-                {r.extra}
-              </div>
-
-              <Button
-                className="mt-4 w-full"
+              <div className="flex-1 space-y-3">{r.extra}</div>
+              <Button className="mt-4 w-full"
                 onClick={() => descargar(r.tipo, r.params)}
-                disabled={r.tipo === 'vendedor' && !filtros.vendedor_id}
-                icon={Download}
-              >
+                disabled={r.tipo === 'trabajador' && !filtros.persona_id}
+                icon={Download}>
                 Descargar PDF
               </Button>
             </div>

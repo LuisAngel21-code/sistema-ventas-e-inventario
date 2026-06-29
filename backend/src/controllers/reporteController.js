@@ -73,6 +73,56 @@ exports.reportePorVendedor = async (req, res) => {
   }
 };
 
+exports.reportePorTrabajador = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { desde, hasta, fuente } = req.query;
+
+    let persona, campoId, tablaPagos;
+    if (fuente === 'vendedor') {
+      const { rows } = await query('SELECT id, nombre, apellido, email, telefono, sueldo_fijo FROM vendedores WHERE id = $1 AND activo = true', [id]);
+      if (rows.length === 0) return res.status(404).json({ error: 'Vendedor no encontrado' });
+      persona = rows[0];
+      campoId = 'v.vendedor_id';
+      tablaPagos = 'pagos_vendedor';
+    } else {
+      const { rows } = await query('SELECT id, nombre, apellido, NULL as email, NULL as telefono, COALESCE(sueldo_mensual/4, 0) as sueldo_fijo FROM trabajadores WHERE id = $1 AND activo = true', [id]);
+      if (rows.length === 0) return res.status(404).json({ error: 'Trabajador no encontrado' });
+      persona = rows[0];
+      campoId = 'v.trabajador_id';
+      tablaPagos = 'pagos_trabajadores';
+    }
+
+    let sql = `
+      SELECT dv.*, v.fecha, p.nombre AS producto_nombre, p.codigo AS producto_codigo
+      FROM detalle_ventas dv
+      JOIN ventas v ON dv.venta_id = v.id
+      JOIN productos p ON dv.producto_id = p.id
+      WHERE ${campoId} = $1`;
+    const params = [id];
+    let idx = 2;
+
+    if (desde) { sql += ` AND v.fecha >= $${idx++}`; params.push(desde); }
+    if (hasta) { sql += ` AND v.fecha <= $${idx++}`; params.push(hasta); }
+    sql += ' ORDER BY v.fecha DESC';
+
+    const { rows: detalles } = await query(sql, params);
+
+    if (detalles.length === 0) {
+      return res.status(404).json({ error: 'No hay ventas en el período seleccionado' });
+    }
+
+    const resumen = calcularResumenVentas(detalles);
+    persona.sueldo_fijo = Number(persona.sueldo_fijo) || 0;
+
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    bufferPDF(doc, () => generarReporteVendedor(doc, persona, detalles, resumen), res, `reporte_${fuente}_${id}.pdf`);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.reporteGeneral = async (req, res) => {
   try {
     const { desde, hasta } = req.query;

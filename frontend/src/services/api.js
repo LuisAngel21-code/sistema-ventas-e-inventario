@@ -116,6 +116,10 @@ export const reportesAPI = {
     const qs = new URLSearchParams({ desde, hasta }).toString();
     return getDownloadUrl(`/api/reportes/vendedor/${id}?${qs}`);
   },
+  trabajador: (id, fuente, desde, hasta) => {
+    const qs = new URLSearchParams({ desde, hasta, fuente }).toString();
+    return getDownloadUrl(`/api/reportes/trabajador/${id}?${qs}`);
+  },
   general: (desde, hasta) => {
     const qs = new URLSearchParams({ desde, hasta }).toString();
     return getDownloadUrl(`/api/reportes/general?${qs}`);
