@@ -116,8 +116,7 @@ export default function TrabajadoresPage() {
                 <thead><tr className="bg-gray-50/50">
                   <th className="table-header">Nombre</th>
                   <th className="table-header">Tipo</th>
-                  <th className="table-header text-right">Sueldo Semanal</th>
-                  <th className="table-header text-right">Tarifa x Unidad</th>
+                  <th className="table-header text-right">Sueldo</th>
                   <th className="table-header">Teléfono</th>
                   <th className="table-header text-center">Estado</th>
                   <th className="table-header text-center">Pago</th>
@@ -128,8 +127,12 @@ export default function TrabajadoresPage() {
                     <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                       <td className="table-cell font-medium">{t.nombre} {t.apellido}</td>
                       <td className="table-cell"><Badge variant={t.tipo === 'jornalero' ? 'info' : t.tipo === 'destajista' ? 'warning' : 'success'}>{t.tipo}</Badge></td>
-                      <td className="table-cell text-right">{t.sueldo_semanal ? `S/ ${Number(t.sueldo_semanal).toFixed(2)}` : '—'}</td>
-                      <td className="table-cell text-right">{t.tarifa_por_unidad ? `S/ ${Number(t.tarifa_por_unidad).toFixed(2)}` : '—'}</td>
+                      <td className="table-cell text-right font-medium tabular-nums">
+                        {t.tipo === 'jornalero' && t.sueldo_semanal ? `S/ ${Number(t.sueldo_semanal).toFixed(2)}/sem` : ''}
+                        {t.tipo === 'destajista' && t.tarifa_por_unidad ? `S/ ${Number(t.tarifa_por_unidad).toFixed(2)} x ud` : ''}
+                        {t.tipo === 'encargado' && t.sueldo_mensual ? `S/ ${Number(t.sueldo_mensual).toFixed(2)}/mes` : ''}
+                        {!t.sueldo_semanal && !t.tarifa_por_unidad && !t.sueldo_mensual ? '—' : ''}
+                      </td>
                       <td className="table-cell text-gray-500">{t.telefono || '—'}</td>
                       <td className="table-cell text-center">{t.activo ? <Badge variant="success">Activo</Badge> : <Badge variant="neutral">Inactivo</Badge>}</td>
                       <td className="table-cell text-center">
@@ -143,7 +146,7 @@ export default function TrabajadoresPage() {
                       </td>
                     </tr>
                   ))}
-                  {trabajadores.length === 0 && <tr><td colSpan={8} className="text-center py-12 text-gray-400"><Users className="w-8 h-8 mx-auto mb-2 opacity-50" />No hay trabajadores</td></tr>}
+                  {trabajadores.length === 0 && <tr><td colSpan={7} className="text-center py-12 text-gray-400"><Users className="w-8 h-8 mx-auto mb-2 opacity-50" />No hay trabajadores</td></tr>}
                 </tbody>
               </table>
             </div>
