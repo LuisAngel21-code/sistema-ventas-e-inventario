@@ -179,6 +179,8 @@ export const pagosAPI = {
   marcarPagado: (id, fuente) => request(`/api/pagos/${id}/pagar?fuente=${fuente}`, { method: 'PUT' }),
   remove: (id, fuente) => request(`/api/pagos/${id}?fuente=${fuente}`, { method: 'DELETE' }),
   adelanto: (id, monto, fuente) => request(`/api/pagos/${id}/adelanto`, { method: 'PUT', body: { monto, fuente } }),
+  mensual: (persona_id, mes, anio) => request(`/api/pagos/mensual?persona_id=${persona_id}&mes=${mes}&anio=${anio}`),
+  mesesDisponibles: (persona_id) => request(`/api/pagos/mensual/meses?persona_id=${persona_id}`),
 };
 
 export const categoriasAPI = {

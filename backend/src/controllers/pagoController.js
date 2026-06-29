@@ -41,6 +41,45 @@ exports.personal = async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 };
 
+exports.mensual = async (req, res) => {
+  try {
+    const { persona_id, mes, anio } = req.query;
+    if (!persona_id || !mes || !anio) return res.status(400).json({ error: 'persona_id, mes y anio requeridos' });
+
+    const { rows: trabajador } = await query('SELECT * FROM trabajadores WHERE id = $1', [persona_id]);
+    if (trabajador.length === 0) return res.status(404).json({ error: 'Trabajador no encontrado' });
+
+    const { rows: resumen } = await query(`
+      SELECT COUNT(*) as num_semanas,
+             COALESCE(SUM(COALESCE(sueldo_base, 0)), 0) as sueldo_mensual,
+             COALESCE(SUM(COALESCE(total_comision, 0)), 0) as comision_mensual,
+             COALESCE(SUM(COALESCE(total_sobreprecio, 0)), 0) as sobreprecio_mensual,
+             COALESCE(SUM(total_pagar), 0) as total_mensual,
+             COALESCE(SUM(COALESCE(adelanto, 0)), 0) as adelanto_mensual,
+             CASE WHEN COUNT(*) FILTER (WHERE estado = 'pendiente') > 0 THEN 'pendiente' ELSE 'pagado' END as estado,
+             MAX(pagado_en) as ultimo_pago
+      FROM pagos_trabajadores
+      WHERE trabajador_id = $1
+        AND EXTRACT(MONTH FROM semana_inicio) = $2
+        AND EXTRACT(YEAR FROM semana_inicio) = $3
+    `, [persona_id, mes, anio]);
+
+    res.json({ trabajador: trabajador[0], resumen: resumen[0] || null });
+  } catch (error) { res.status(500).json({ error: error.message }); }
+};
+
+exports.mesesDisponibles = async (req, res) => {
+  try {
+    const { persona_id } = req.query;
+    const { rows } = await query(`
+      SELECT DISTINCT EXTRACT(MONTH FROM semana_inicio) as mes, EXTRACT(YEAR FROM semana_inicio) as anio
+      FROM pagos_trabajadores WHERE trabajador_id = $1
+      ORDER BY anio DESC, mes DESC
+    `, [persona_id]);
+    res.json(rows);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+};
+
 exports.calcular = async (req, res) => {
   try {
     const { semana_inicio, semana_fin, persona_id, fuente } = req.query;
