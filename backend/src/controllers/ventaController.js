@@ -83,11 +83,13 @@ exports.create = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    const { rows: vendedor } = await client.query(
-      'SELECT id FROM vendedores WHERE id = $1 AND activo = true',
-      [vendedor_id]
-    );
-    if (vendedor.length === 0) throw new Error('Vendedor no encontrado o inactivo');
+    if (vendedor_id) {
+      const { rows: v } = await client.query('SELECT id FROM vendedores WHERE id = $1 AND activo = true', [vendedor_id]);
+      if (v.length === 0) throw new Error('Vendedor no encontrado o inactivo');
+    } else if (trabajador_id) {
+      const { rows: t } = await client.query("SELECT id FROM trabajadores WHERE id = $1 AND tipo IN ('vendedor','encargado') AND activo = true", [trabajador_id]);
+      if (t.length === 0) throw new Error('Encargado no encontrado o inactivo');
+    }
 
     let totalVenta = 0;
     const detalles = [];
