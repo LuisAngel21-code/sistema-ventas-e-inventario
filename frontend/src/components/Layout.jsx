@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, ShoppingCart, Package, Warehouse,
   Users, FileBarChart, LogOut, Menu, X,
-  ChevronRight, Store, UserCircle, DollarSign, Wallet, Truck, Calendar,
+  ChevronRight, Store, UserCircle, DollarSign, Wallet, Truck, Calendar, Briefcase,
 } from 'lucide-react';
 
 const navItems = [
