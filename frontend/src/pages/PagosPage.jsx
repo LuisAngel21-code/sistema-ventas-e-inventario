@@ -37,12 +37,12 @@ export default function PagosPage() {
   });
 
   useEffect(() => {
-    pagosAPI.personal().then(setPersonal).catch(console.error);
+    pagosAPI.personal().then(p => { setPersonal(p); setLoading(false); }).catch(console.error);
   }, []);
 
   function loadPagos() {
     if (!personaSel) {
-      pagosAPI.getAll({}).then(setPagos).catch(console.error);
+      pagosAPI.getAll({}).then(setPagos).catch(console.error).finally(() => setLoading(false));
       return;
     }
     if (personaSel.cargo === 'Encargado') {
@@ -53,11 +53,12 @@ export default function PagosPage() {
           setMesSel(meses[0].mes);
           setAnioSel(meses[0].anio);
         }
-      });
+        setLoading(false);
+      }).catch(() => setLoading(false));
     } else {
       setVista('semanal');
       pagosAPI.getAll({ persona_id: personaSel.id, fuente: personaSel.cargo === 'Vendedor' ? 'vendedor' : 'trabajador' })
-        .then(setPagos).catch(console.error);
+        .then(setPagos).catch(console.error).finally(() => setLoading(false));
     }
   }
 
