@@ -10,7 +10,7 @@ import Select from '../components/ui/Select';
 import { useToast } from '../context/ToastContext';
 
 const emptyProduct = {
-  codigo: '', nombre: '', descripcion: '', costo: '', categoria: '',
+  codigo: '', nombre: '', costo: '', categoria: '',
   marca_id: '', proveedor: '', tipo: '',
   stock: 0, stock_minimo: 0, precio_venta: '',
 };
@@ -60,7 +60,6 @@ export default function ProductosPage() {
       setForm({
         codigo: prod.codigo || '',
         nombre: prod.nombre || '',
-        descripcion: prod.descripcion || '',
         costo: prod.costo || '',
         categoria: prod.categoria || '',
         marca_id: prod.marca_id || '',
@@ -230,7 +229,7 @@ export default function ProductosPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <Input label="Código" value={form.codigo} onChange={(e) => setForm({ ...form, codigo: e.target.value })} required />
-            <Input label="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
+            <Input label="Descripción del producto" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -303,7 +302,6 @@ export default function ProductosPage() {
             <Input label="Precio Base (costo + 40%)" type="number" step="0.01" value={form.precio_venta}
               onChange={(e) => setForm({ ...form, precio_venta: e.target.value })} />
           </div>
-          <Input label="Descripción" value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
           <div className="grid grid-cols-2 gap-4">
             <Input label="Stock Inicial" type="number" min="0" value={form.stock}
               onChange={(e) => setForm({ ...form, stock: e.target.value })} />
