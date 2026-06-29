@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { cajaAPI } from '../services/api';
-import { Wallet, Plus, Minus, Lock, Unlock, TrendingUp, TrendingDown, History } from 'lucide-react';
+import { cajaAPI, getDownloadUrl } from '../services/api';
+import { Wallet, Plus, Minus, Lock, Unlock, TrendingUp, TrendingDown, History, FileText } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -82,8 +82,13 @@ export default function CajaPage() {
           <p className="page-subtitle">Control de caja diaria</p>
         </div>
         {sesion ? (
-          <Button onClick={cerrarCaja} icon={Lock}
-            style={{ backgroundColor: '#475569' }}>Cerrar Caja</Button>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => window.open(getDownloadUrl(`/api/caja/reporte/${sesion.id}`), '_blank')} icon={FileText}>
+              Reporte PDF
+            </Button>
+            <Button onClick={cerrarCaja} icon={Lock}
+              style={{ backgroundColor: '#475569' }}>Cerrar Caja</Button>
+          </div>
         ) : (
           <Button onClick={abrirCaja} icon={Unlock}>Abrir Caja</Button>
         )}

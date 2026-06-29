@@ -156,6 +156,109 @@ exports.eliminar = async (req, res) => {
   }
 };
 
+exports.exportarReporte = async (req, res) => {
+  try {
+    const { rows: sesion } = await query('SELECT * FROM caja_sesiones WHERE id = $1', [req.params.id]);
+    if (sesion.length === 0) return res.status(404).json({ error: 'Sesión no encontrada' });
+
+    const { rows: movimientos } = await query(
+      'SELECT * FROM caja_movimientos WHERE sesion_id = $1 ORDER BY created_at ASC',
+      [req.params.id]
+    );
+
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const chunks = [];
+    const stream = doc.pipe(require('stream').PassThrough());
+    stream.on('data', chunk => chunks.push(chunk));
+    stream.on('end', () => {
+      const pdf = Buffer.concat(chunks);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=reporte_caja.pdf');
+      res.send(pdf);
+    });
+    stream.on('error', err => { if (!res.headersSent) res.status(500).json({ error: err.message }); });
+
+    const m = 50;
+    const w = doc.page.width - m * 2;
+    let y = m;
+
+    doc.font('Helvetica-Bold').fontSize(20).text('Mueblería Cams', m, y, { align: 'center', width: w });
+    y += 28;
+    doc.fontSize(14).font('Helvetica').text('Reporte Diario de Caja', m, y, { align: 'center', width: w });
+    y += 20;
+    doc.fontSize(10).fillColor('#666')
+      .text(new Date(sesion[0].fecha_apertura).toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), m, y, { align: 'center', width: w });
+    y += 8;
+    doc.text(`Estado: ${sesion[0].estado === 'abierta' ? 'Abierta' : 'Cerrada'}`, m, y, { align: 'center', width: w });
+    y += 25;
+
+    // Saldo inicial
+    doc.rect(m, y, w, 20).fill('#f8f9fa');
+    doc.fillColor('#333').font('Helvetica-Bold').fontSize(11);
+    doc.text('Saldo inicial:', m + 10, y + 5);
+    doc.text(`S/ ${Number(sesion[0].saldo_inicial).toFixed(2)}`, m + w - 10, y + 5, { align: 'right' });
+    y += 28;
+
+    // Tabla movimientos
+    doc.fillColor('#1e3a5f').font('Helvetica-Bold').fontSize(10);
+    doc.text('MOVIMIENTOS', m, y);
+    y += 18;
+
+    const colW = [45, 65, 65, 170, 65];
+    const headers = ['Hora', 'Tipo', 'Pago', 'Descripción', 'Monto'];
+    doc.rect(m, y, w, 16).fill('#1e3a5f');
+    doc.fillColor('#fff').font('Helvetica-Bold').fontSize(8);
+    let x = m;
+    headers.forEach((h, i) => { doc.text(h, x + 3, y + 4, { width: colW[i] }); x += colW[i]; });
+    y += 18;
+
+    let totalIng = 0, totalEgr = 0;
+    doc.font('Helvetica').fontSize(8);
+    movimientos.forEach((mv, idx) => {
+      if (y > doc.page.height - 60) { doc.addPage(); y = 50; }
+      if (idx % 2 === 0) doc.rect(m, y, w, 14).fill('#f8f9fa');
+      doc.fillColor('#333');
+      x = m;
+      const vals = [
+        new Date(mv.created_at).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+        mv.tipo === 'ingreso' ? 'Ingreso' : 'Egreso',
+        mv.tipo_pago || '—',
+        mv.descripcion || '—',
+        `${mv.tipo === 'ingreso' ? '+' : '-'} S/ ${Number(mv.monto).toFixed(2)}`,
+      ];
+      vals.forEach((v, i) => { doc.text(v, x + 3, y + 3, { width: colW[i] }); x += colW[i]; });
+      if (mv.tipo === 'ingreso') totalIng += Number(mv.monto);
+      else totalEgr += Number(mv.monto);
+      y += 14;
+    });
+
+    y += 10;
+    if (y > doc.page.height - 80) { doc.addPage(); y = 50; }
+
+    doc.rect(m, y, w, 60).fill('#f8f9fa');
+    doc.fillColor('#333').font('Helvetica').fontSize(10);
+    y += 8;
+    doc.text(`Total Ingresos:`, m + 10, y);
+    doc.text(`S/ ${totalIng.toFixed(2)}`, m + w - 10, y, { align: 'right' });
+    y += 16;
+    doc.text(`Total Egresos:`, m + 10, y);
+    doc.text(`S/ ${totalEgr.toFixed(2)}`, m + w - 10, y, { align: 'right' });
+    y += 16;
+    doc.font('Helvetica-Bold').fontSize(11).fillColor('#1e3a5f');
+    doc.text(`Saldo Final:`, m + 10, y);
+    doc.text(`S/ ${Number(sesion[0].saldo_final).toFixed(2)}`, m + w - 10, y, { align: 'right' });
+
+    y = doc.page.height - 50;
+    doc.fillColor('#999').font('Helvetica').fontSize(8);
+    doc.text(`Generado: ${new Date().toLocaleDateString('es-PE')}`, m, y, { align: 'center', width: w });
+
+    doc.end();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.historial = async (req, res) => {
   try {
     const { desde, hasta } = req.query;
