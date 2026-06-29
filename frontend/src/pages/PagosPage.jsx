@@ -120,72 +120,76 @@ export default function PagosPage() {
 
       {loading ? <Spinner className="h-48" /> : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {pagos.map(p => (
-            <div key={p.id} className="stat-card p-5">
+          {pagos.map(p => {
+            const neto = Math.max(0, Number(p.total_pago) - Number(p.adelanto || 0));
+            return (
+            <div key={p.id} className="stat-card p-5 flex flex-col">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-emerald-600" />
+                  <div className="w-11 h-11 bg-emerald-50 rounded-xl flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
                     <h3 className="font-display font-semibold text-gray-900">{p.nombre} {p.apellido}</h3>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-400">
                       {new Date(p.semana_inicio).toLocaleDateString('es-PE')} — {new Date(p.semana_fin).toLocaleDateString('es-PE')}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   {p.estado === 'pagado' ? (
                     <Badge variant="success"><CheckCircle className="w-3 h-3 mr-1" /> Pagado</Badge>
                   ) : (
                     <Badge variant="warning"><XCircle className="w-3 h-3 mr-1" /> Pendiente</Badge>
                   )}
                   <button onClick={() => setDeleteId(p.id)}
-                    className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors"
-                    title="Eliminar pago">
-                    <Trash2 className="w-4 h-4" />
+                    className="p-1.5 text-gray-300 hover:text-red-500 transition-colors" title="Eliminar">
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-3 text-sm">
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                  <p className="text-xs text-gray-500">Base</p>
+
+              <div className="flex border border-gray-100 rounded-lg divide-x divide-gray-100 text-sm mb-4">
+                <div className="flex-1 p-3 text-center">
+                  <p className="text-xs text-gray-400 mb-0.5">Base</p>
                   <p className="font-semibold text-gray-900">S/ {Number(p.sueldo_base).toFixed(2)}</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                  <p className="text-xs text-gray-500">Comisión 2%</p>
+                <div className="flex-1 p-3 text-center">
+                  <p className="text-xs text-gray-400 mb-0.5">Comisión 2%</p>
                   <p className="font-semibold text-emerald-600">S/ {Number(p.total_comision).toFixed(2)}</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                  <p className="text-xs text-gray-500">50% Sobreprecio</p>
+                <div className="flex-1 p-3 text-center">
+                  <p className="text-xs text-gray-400 mb-0.5">50% Sobrep.</p>
                   <p className="font-semibold text-amber-600">S/ {Number(p.total_sobreprecio).toFixed(2)}</p>
                 </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Total</span>
-                  <span className="font-semibold text-primary-700">S/ {Number(p.total_pago).toFixed(2)}</span>
+
+              <div className="bg-gray-50 rounded-lg p-3.5 space-y-2 text-sm mb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Total bruto</span>
+                  <span className="font-medium text-gray-900">S/ {Number(p.total_pago).toFixed(2)}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between">
                   <span className="text-gray-500">Adelanto</span>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     {adelantoEdit === p.id ? (
-                      <>
-                        <input type="number" step="0.01" className="input-field w-20 text-sm py-0.5"
+                      <div className="flex items-center gap-1">
+                        <input type="number" step="0.01"
+                          className="w-20 px-2 py-1 text-xs border border-gray-200 rounded text-right"
                           value={adelantoMonto}
                           onChange={e => setAdelantoMonto(e.target.value)}
                           autoFocus />
                         <button onClick={() => registrarAdelanto(p.id)}
-                          className="text-xs text-primary-600 hover:text-primary-700 font-medium">OK</button>
+                          className="text-xs font-medium text-emerald-600 hover:text-emerald-700">OK</button>
                         <button onClick={() => setAdelantoEdit(null)}
                           className="text-xs text-gray-400 hover:text-gray-600">✕</button>
-                      </>
+                      </div>
                     ) : (
                       <>
                         <span className="text-red-600 font-medium">- S/ {Number(p.adelanto || 0).toFixed(2)}</span>
                         {p.estado !== 'pagado' && (
                           <button onClick={() => { setAdelantoEdit(p.id); setAdelantoMonto(p.adelanto || ''); }}
-                            className="text-xs text-primary-600 hover:text-primary-700 ml-1">
+                            className="text-xs text-primary-600 hover:text-primary-700 underline">
                             {Number(p.adelanto || 0) > 0 ? 'Editar' : 'Añadir'}
                           </button>
                         )}
@@ -193,27 +197,27 @@ export default function PagosPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center justify-between pt-1 border-t border-gray-100">
-                  <span className="text-sm font-display font-semibold text-gray-900">A pagar</span>
-                  <span className="text-xl font-display font-bold text-primary-700">
-                    S/ {Math.max(0, Number(p.total_pago) - Number(p.adelanto || 0)).toFixed(2)}
-                  </span>
+                <div className="border-t border-gray-200 pt-2 flex items-center justify-between">
+                  <span className="text-sm font-display font-semibold text-gray-900">Neto a pagar</span>
+                  <span className="text-lg font-display font-bold text-primary-700">S/ {neto.toFixed(2)}</span>
                 </div>
               </div>
-              <div className="flex justify-end mt-3">
+
+              <div className="mt-auto flex justify-end">
                 {p.estado !== 'pagado' ? (
-                  <div className="flex gap-2">
-                    <Button variant="primary" onClick={() => marcarPagado(p.id)} icon={CheckCircle}>Marcar Pagado</Button>
-                    <button onClick={() => setDeleteId(p.id)} className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors" title="Eliminar pago">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <Button variant="primary" onClick={() => marcarPagado(p.id)} icon={CheckCircle}>
+                    Marcar Pagado
+                  </Button>
                 ) : (
-                  <p className="text-xs text-gray-400">Pagado: {new Date(p.pagado_en).toLocaleDateString('es-PE')}</p>
+                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                    Pagado: {new Date(p.pagado_en).toLocaleDateString('es-PE')}
+                  </p>
                 )}
               </div>
             </div>
-          ))}
+            );
+          })}
           {pagos.length === 0 && (
             <div className="col-span-full text-center py-12 text-gray-400">
               <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-50" />
