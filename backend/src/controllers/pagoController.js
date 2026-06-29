@@ -76,6 +76,15 @@ exports.calcular = async (req, res) => {
   }
 };
 
+exports.remove = async (req, res) => {
+  try {
+    await query('DELETE FROM pagos_vendedor WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Pago eliminado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.marcarPagado = async (req, res) => {
   try {
     const { rows } = await query(

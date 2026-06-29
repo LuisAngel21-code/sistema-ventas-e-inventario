@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { pagosAPI } from '../services/api';
-import { DollarSign, Calendar, CheckCircle, XCircle, Calculator } from 'lucide-react';
+import { DollarSign, Calendar, CheckCircle, XCircle, Calculator, Trash2 } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import { useToast } from '../context/ToastContext';
 
 export default function PagosPage() {
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [calculando, setCalculando] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const { showToast } = useToast();
 
   const today = new Date();
@@ -50,6 +52,17 @@ export default function PagosPage() {
     try {
       await pagosAPI.marcarPagado(id);
       showToast('Pago marcado como pagado', 'success');
+      load();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
+  async function eliminarPago(id) {
+    try {
+      await pagosAPI.remove(id);
+      setDeleteId(null);
+      showToast('Pago eliminado', 'success');
       load();
     } catch (err) {
       showToast(err.message, 'error');
@@ -143,6 +156,9 @@ export default function PagosPage() {
                   </p>
                 )}
               </div>
+              <button onClick={() => setDeleteId(p.id)} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors" title="Eliminar">
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           ))}
           {pagos.length === 0 && (
@@ -153,6 +169,14 @@ export default function PagosPage() {
           )}
         </div>
       )}
+
+      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Eliminar Pago">
+        <p className="text-sm text-gray-600 mb-6">¿Estás seguro de eliminar este pago?</p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setDeleteId(null)}>Cancelar</Button>
+          <Button variant="danger" onClick={() => eliminarPago(deleteId)}>Eliminar</Button>
+        </div>
+      </Modal>
     </div>
   );
 }
