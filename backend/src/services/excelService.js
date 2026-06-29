@@ -2,8 +2,12 @@ const ExcelJS = require('exceljs');
 
 async function exportToExcel(data, columns, name) {
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Datos');
+  addSheet(workbook, 'Datos', columns, data);
+  return workbook;
+}
 
+function addSheet(workbook, sheetName, columns, data) {
+  const sheet = workbook.addWorksheet(sheetName);
   sheet.columns = columns.map(c => ({
     header: c.header,
     key: c.key,
@@ -19,8 +23,6 @@ async function exportToExcel(data, columns, name) {
   sheet.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
 
   data.forEach(row => sheet.addRow(row));
-
-  return workbook;
 }
 
-module.exports = { exportToExcel };
+module.exports = { exportToExcel, addSheet };

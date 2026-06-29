@@ -1,5 +1,5 @@
 const { query } = require('../config/database');
-const { exportToExcel } = require('../services/excelService');
+const { exportToExcel, addSheet } = require('../services/excelService');
 
 exports.productos = async (req, res) => {
   try {
@@ -56,10 +56,19 @@ exports.ventas = async (req, res) => {
 
 exports.inventario = async (req, res) => {
   try {
-    const { rows } = await query(
+    const { tipo } = req.query;
+    const { rows: productos } = await query(
       "SELECT codigo, nombre, categoria, costo, precio_base, stock, stock_minimo, CASE WHEN stock <= stock_minimo THEN 'Bajo' ELSE 'Normal' END as estado FROM productos WHERE activo = true ORDER BY nombre"
     );
-    const workbook = await exportToExcel(rows, [
+    let sqlMov = 'SELECT im.created_at as fecha, p.nombre as producto, im.tipo, im.cantidad, im.referencia FROM inventario_movimientos im JOIN productos p ON im.producto_id = p.id WHERE 1=1';
+    const params = []; let idx = 1;
+    if (tipo) { sqlMov += ` AND im.tipo = $${idx++}`; params.push(tipo); }
+    sqlMov += ' ORDER BY im.created_at DESC LIMIT 500';
+    const { rows: movimientos } = await query(sqlMov, params);
+
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    addSheet(workbook, 'Stock', [
       { header: 'Código', key: 'codigo', width: 15 },
       { header: 'Nombre', key: 'nombre', width: 35 },
       { header: 'Categoría', key: 'categoria', width: 20 },
@@ -67,9 +76,41 @@ exports.inventario = async (req, res) => {
       { header: 'Precio Base', key: 'precio_base', width: 15 },
       { header: 'Stock', key: 'stock', width: 10 },
       { header: 'Estado', key: 'estado', width: 12 },
-    ], 'inventario');
+    ], productos);
+    addSheet(workbook, 'Movimientos', [
+      { header: 'Fecha', key: 'fecha', width: 20 },
+      { header: 'Producto', key: 'producto', width: 35 },
+      { header: 'Tipo', key: 'tipo', width: 12 },
+      { header: 'Cantidad', key: 'cantidad', width: 10 },
+      { header: 'Referencia', key: 'referencia', width: 30 },
+    ], movimientos);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename=inventario.xlsx');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.movimientos = async (req, res) => {
+  try {
+    const { tipo } = req.query;
+    let sql = 'SELECT im.created_at as fecha, p.nombre as producto, im.tipo, im.cantidad, im.referencia FROM inventario_movimientos im JOIN productos p ON im.producto_id = p.id WHERE 1=1';
+    const params = []; let idx = 1;
+    if (tipo) { sql += ` AND im.tipo = $${idx++}`; params.push(tipo); }
+    sql += ' ORDER BY im.created_at DESC LIMIT 500';
+    const { rows } = await query(sql, params);
+
+    const workbook = await exportToExcel(rows, [
+      { header: 'Fecha', key: 'fecha', width: 20 },
+      { header: 'Producto', key: 'producto', width: 35 },
+      { header: 'Tipo', key: 'tipo', width: 12 },
+      { header: 'Cantidad', key: 'cantidad', width: 10 },
+      { header: 'Referencia', key: 'referencia', width: 30 },
+    ], 'movimientos');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=movimientos.xlsx');
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {

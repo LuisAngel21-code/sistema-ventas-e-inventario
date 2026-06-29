@@ -21,7 +21,7 @@ exports.getStock = async (req, res) => {
 
 exports.getMovimientos = async (req, res) => {
   try {
-    const { producto_id } = req.query;
+    const { producto_id, tipo } = req.query;
     let sql = `
       SELECT im.*, p.nombre AS producto_nombre, p.codigo AS producto_codigo
       FROM inventario_movimientos im
@@ -30,6 +30,7 @@ exports.getMovimientos = async (req, res) => {
     const params = [];
     let idx = 1;
 
+    if (tipo) { sql += ` AND im.tipo = $${idx++}`; params.push(tipo); }
     if (producto_id) {
       sql += ` AND im.producto_id = $${idx++}`;
       params.push(producto_id);

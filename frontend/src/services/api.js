@@ -100,8 +100,8 @@ export const ventasAPI = {
 
 export const inventarioAPI = {
   getStock: () => request('/api/inventario/stock'),
-  getMovimientos: (producto_id) =>
-    request(`/api/inventario/movimientos${producto_id ? '?producto_id=' + producto_id : ''}`),
+  getMovimientos: (tipo) =>
+    request(`/api/inventario/movimientos${tipo ? '?tipo=' + tipo : ''}`),
   entradaStock: (data) => request('/api/inventario/entrada', { method: 'POST', body: data }),
 };
 

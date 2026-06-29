@@ -4,6 +4,7 @@ const controller = require('../controllers/exporteController');
 router.get('/productos', controller.productos);
 router.get('/ventas', controller.ventas);
 router.get('/inventario', controller.inventario);
+router.get('/movimientos', controller.movimientos);
 router.get('/vendedores', controller.vendedores);
 
 module.exports = router;

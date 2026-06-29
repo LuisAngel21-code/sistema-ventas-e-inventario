@@ -122,17 +122,16 @@ exports.reporteGeneral = async (req, res) => {
 
 exports.reporteInventario = async (req, res) => {
   try {
+    const { tipo } = req.query;
     const { rows: productos } = await query(
       'SELECT id, codigo, nombre, costo, precio_base, stock, stock_minimo FROM productos WHERE activo = true ORDER BY nombre'
     );
 
-    const { rows: movimientos } = await query(`
-      SELECT im.*, p.nombre AS producto_nombre
-      FROM inventario_movimientos im
-      JOIN productos p ON im.producto_id = p.id
-      ORDER BY im.created_at DESC
-      LIMIT 200
-    `);
+    let sqlMov = `SELECT im.*, p.nombre AS producto_nombre FROM inventario_movimientos im JOIN productos p ON im.producto_id = p.id WHERE 1=1`;
+    const params = []; let idx = 1;
+    if (tipo) { sqlMov += ` AND im.tipo = $${idx++}`; params.push(tipo); }
+    sqlMov += ' ORDER BY im.created_at DESC LIMIT 200';
+    const { rows: movimientos } = await query(sqlMov, params);
 
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 

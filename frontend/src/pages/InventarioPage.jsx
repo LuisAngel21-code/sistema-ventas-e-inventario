@@ -17,6 +17,7 @@ export default function InventarioPage() {
   const [entryOpen, setEntryOpen] = useState(false);
   const { showToast } = useToast();
   const [entryForm, setEntryForm] = useState({ producto_id: '', cantidad: '', referencia: '', proveedor: '' });
+  const [filtroTipo, setFiltroTipo] = useState('');
 
   function loadStock() {
     setLoading(true);
@@ -28,7 +29,7 @@ export default function InventarioPage() {
 
   function loadMovimientos() {
     setLoading(true);
-    inventarioAPI.getMovimientos()
+    inventarioAPI.getMovimientos(filtroTipo)
       .then(setMovimientos)
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -37,7 +38,7 @@ export default function InventarioPage() {
   useEffect(() => {
     if (tab === 'stock') loadStock();
     else loadMovimientos();
-  }, [tab]);
+  }, [tab, filtroTipo]);
 
   async function handleEntry(e) {
     e.preventDefault();
@@ -98,6 +99,17 @@ export default function InventarioPage() {
           );
         })}
       </div>
+
+      {tab === 'movimientos' && (
+        <div className="flex gap-2">
+          {['', 'entrada', 'salida', 'ajuste'].map(t => (
+            <button key={t} onClick={() => setFiltroTipo(t)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filtroTipo === t ? 'bg-primary-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+              {t === '' ? 'Todos' : t === 'entrada' ? 'Entradas' : t === 'salida' ? 'Salidas' : 'Ajustes'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {tab === 'stock' ? (
         <div className="card-page overflow-hidden">
