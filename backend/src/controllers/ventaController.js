@@ -179,10 +179,6 @@ exports.remove = async (req, res) => {
         'UPDATE productos SET stock = stock + $1 WHERE id = $2',
         [det.cantidad, det.producto_id]
       );
-      await client.query(
-        "INSERT INTO inventario_movimientos (producto_id, tipo, cantidad, referencia) VALUES ($1, $2, $3, $4)",
-        [det.producto_id, 'entrada', det.cantidad, `Eliminación Venta #${req.params.id}`]
-      );
     }
 
     await client.query('DELETE FROM ventas WHERE id = $1', [req.params.id]);
