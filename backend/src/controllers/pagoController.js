@@ -3,28 +3,31 @@ const { query } = require('../config/database');
 exports.listar = async (req, res) => {
   try {
     const { persona_id, fuente } = req.query;
-    let sql = `
-      SELECT pv.id, 'vendedor' as fuente, pv.vendedor_id as persona_id, v.nombre, v.apellido,
-             'Vendedor' as cargo, pv.semana_inicio, pv.semana_fin, pv.sueldo_base,
-             pv.total_comision, pv.total_sobreprecio, pv.total_pago as total,
-             pv.adelanto, pv.fecha_adelanto, pv.estado, pv.pagado_en
-      FROM pagos_vendedor pv
-      JOIN vendedores v ON pv.vendedor_id = v.id
+    const sql = `
+      WITH pagos_unidos AS (
+        SELECT pv.id, 'vendedor' as fuente, pv.vendedor_id::text as persona_id, v.nombre, v.apellido,
+               'Vendedor' as cargo, pv.semana_inicio, pv.semana_fin, pv.sueldo_base,
+               pv.total_comision, pv.total_sobreprecio, pv.total_pago as total,
+               pv.adelanto, pv.fecha_adelanto, pv.estado, pv.pagado_en
+        FROM pagos_vendedor pv
+        JOIN vendedores v ON pv.vendedor_id = v.id
 
-      UNION ALL
+        UNION ALL
 
-      SELECT pt.id, 'trabajador' as fuente, pt.trabajador_id as persona_id, t.nombre, t.apellido,
-             CASE t.tipo WHEN 'jornalero' THEN 'Jornalero' WHEN 'destajista' THEN 'Destajista' WHEN 'encargado' THEN 'Encargado' END as cargo,
-             pt.semana_inicio, pt.semana_fin, 0 as sueldo_base, 0 as total_comision, 0 as total_sobreprecio,
-             pt.total_pagar as total, 0 as adelanto, NULL as fecha_adelanto, pt.estado, pt.pagado_en
-      FROM pagos_trabajadores pt
-      JOIN trabajadores t ON pt.trabajador_id = t.id
-      WHERE 1=1`;
-    const params = []; let idx = 1;
-    if (persona_id && fuente === 'vendedor') { sql += ` AND pv.vendedor_id = $${idx++}`; params.push(persona_id); }
-    if (persona_id && fuente === 'trabajador') { sql += ` AND pt.trabajador_id = $${idx++}`; params.push(persona_id); }
-    sql += ' ORDER BY semana_inicio DESC, nombre';
-    const { rows } = await query(sql, params);
+        SELECT pt.id, 'trabajador' as fuente, pt.trabajador_id::text as persona_id, t.nombre, t.apellido,
+               CASE t.tipo WHEN 'jornalero' THEN 'Jornalero' WHEN 'destajista' THEN 'Destajista' WHEN 'encargado' THEN 'Encargado' END as cargo,
+               pt.semana_inicio, pt.semana_fin, COALESCE(pt.sueldo_base,0) as sueldo_base,
+               COALESCE(pt.total_comision,0) as total_comision, COALESCE(pt.total_sobreprecio,0) as total_sobreprecio,
+               pt.total_pagar as total, COALESCE(pt.adelanto,0) as adelanto, pt.fecha_adelanto,
+               pt.estado, pt.pagado_en
+        FROM pagos_trabajadores pt
+        JOIN trabajadores t ON pt.trabajador_id = t.id
+      )
+      SELECT * FROM pagos_unidos
+      WHERE ($1 = '' AND $2 = '') OR (fuente = $1 AND persona_id = $2)
+      ORDER BY semana_inicio DESC, nombre
+    `;
+    const { rows } = await query(sql, [fuente || '', persona_id || '']);
     res.json(rows);
   } catch (error) { res.status(500).json({ error: error.message }); }
 };
