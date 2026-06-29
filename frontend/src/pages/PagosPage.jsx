@@ -120,11 +120,18 @@ export default function PagosPage() {
                     </p>
                   </div>
                 </div>
-                {p.estado === 'pagado' ? (
-                  <Badge variant="success"><CheckCircle className="w-3 h-3 mr-1" /> Pagado</Badge>
-                ) : (
-                  <Badge variant="warning"><XCircle className="w-3 h-3 mr-1" /> Pendiente</Badge>
-                )}
+                <div className="flex items-center gap-2">
+                  {p.estado === 'pagado' ? (
+                    <Badge variant="success"><CheckCircle className="w-3 h-3 mr-1" /> Pagado</Badge>
+                  ) : (
+                    <Badge variant="warning"><XCircle className="w-3 h-3 mr-1" /> Pendiente</Badge>
+                  )}
+                  <button onClick={() => setDeleteId(p.id)}
+                    className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors"
+                    title="Eliminar pago">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -156,9 +163,6 @@ export default function PagosPage() {
                   </p>
                 )}
               </div>
-              <button onClick={() => setDeleteId(p.id)} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors" title="Eliminar">
-                <Trash2 className="w-4 h-4" />
-              </button>
             </div>
           ))}
           {pagos.length === 0 && (

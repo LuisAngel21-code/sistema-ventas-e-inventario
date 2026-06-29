@@ -27,6 +27,14 @@ exports.calcular = async (req, res) => {
       return res.status(400).json({ error: 'semana_inicio y semana_fin requeridos' });
     }
 
+    const { rows: hayVentas } = await query(
+      "SELECT COUNT(*) as total FROM ventas WHERE fecha >= $1 AND fecha <= $2 AND estado = 'completada'",
+      [semana_inicio, semana_fin]
+    );
+    if (Number(hayVentas[0].total) === 0) {
+      return res.status(404).json({ error: 'No hay ventas en esta semana para ningún vendedor' });
+    }
+
     const { rows: vendedores } = await query(
       'SELECT id, nombre, apellido, sueldo_fijo FROM vendedores WHERE activo = true'
     );
