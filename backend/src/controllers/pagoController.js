@@ -121,7 +121,7 @@ exports.calcular = async (req, res) => {
       if (t.tipo === 'jornalero') { totalPagar = Number(t.sueldo_semanal); tipoPago = 'sueldo_fijo'; sueldoBase = Number(t.sueldo_semanal); }
       else if (t.tipo === 'destajista') { totalPagar = Number(t.sueldo_semanal); tipoPago = 'produccion'; sueldoBase = Number(t.sueldo_semanal); }
       else if (t.tipo === 'encargado') {
-        sueldoBase = (Number(t.sueldo_mensual) || 0) / 4;
+        sueldoBase = Number(t.sueldo_mensual) || 0;
         const { rows: v } = await query(`
           SELECT COALESCE(SUM(dv.precio_base_unitario * dv.cantidad) * 0.02, 0) as comision,
                  COALESCE(SUM(CASE WHEN dv.precio_final_unitario > dv.precio_base_unitario THEN (dv.precio_final_unitario - dv.precio_base_unitario) * dv.cantidad * 0.5 ELSE 0 END), 0) as sobreprecio

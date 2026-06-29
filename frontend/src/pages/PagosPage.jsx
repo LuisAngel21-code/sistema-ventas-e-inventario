@@ -73,8 +73,14 @@ export default function PagosPage() {
   async function calcularPagos() {
     setCalculando(true);
     try {
+      let inicio = semana.inicio, fin = semana.fin;
+      if (personaSel?.cargo === 'Encargado' && mesSel && anioSel) {
+        const ultimoDia = new Date(Number(anioSel), Number(mesSel), 0).getDate();
+        inicio = `${anioSel}-${String(mesSel).padStart(2, '0')}-01`;
+        fin = `${anioSel}-${String(mesSel).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
+      }
       const params = personaSel ? `persona_id=${personaSel.id}&fuente=${personaSel.cargo === 'Vendedor' ? 'vendedor' : 'trabajador'}` : '';
-      const res = await pagosAPI.calcular(semana.inicio, semana.fin, params);
+      const res = await pagosAPI.calcular(inicio, fin, params);
       showToast(res.message, 'success');
       loadPagos();
     } catch (err) { showToast(err.message, 'error'); }
