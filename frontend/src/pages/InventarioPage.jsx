@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { inventarioAPI, productosAPI, getDownloadUrl } from '../services/api';
-import { Warehouse, Package, Plus, ArrowUpDown, AlertTriangle, CheckCircle, XCircle, FileSpreadsheet } from 'lucide-react';
+import { Warehouse, Package, Plus, ArrowUpDown, AlertTriangle, CheckCircle, XCircle, FileSpreadsheet, Search } from 'lucide-react';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -18,6 +18,8 @@ export default function InventarioPage() {
   const { showToast } = useToast();
   const [entryForm, setEntryForm] = useState({ producto_id: '', cantidad: '', referencia: '', proveedor: '' });
   const [filtroTipo, setFiltroTipo] = useState('');
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroCategoria, setFiltroCategoria] = useState('');
 
   function loadStock() {
     setLoading(true);
@@ -111,13 +113,29 @@ export default function InventarioPage() {
         </div>
       )}
 
+      {tab === 'stock' && (
+        <div className="flex gap-3 items-center flex-wrap mb-3">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input className="input-field pl-9" placeholder="Buscar producto..."
+              value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+          </div>
+          <select className="input-field w-44" value={filtroCategoria}
+            onChange={e => setFiltroCategoria(e.target.value)}>
+            <option value="">Todas las categorías</option>
+            {[...new Set(stock.map(p => p.categoria).filter(Boolean))].map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {tab === 'stock' ? (
         <div className="card-page overflow-hidden">
           {loading ? <Spinner className="h-48" /> : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50/50">
+                <thead><tr className="bg-gray-50/50">
                     <th className="table-header">Código</th>
                     <th className="table-header">Producto</th>
                     <th className="table-header">Categoría</th>
@@ -130,7 +148,10 @@ export default function InventarioPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {stock.map(p => {
+                  {stock
+                    .filter(p => (!busqueda || p.nombre.toLowerCase().includes(busqueda.toLowerCase())) &&
+                                (!filtroCategoria || p.categoria === filtroCategoria))
+                    .map(p => {
                     const estado = Number(p.stock) <= 0 ? 'sin_stock' : Number(p.stock) <= Number(p.stock_minimo) ? 'bajo' : 'normal';
                     return (
                       <tr key={p.id} className={`border-b border-gray-50 hover:bg-gray-50/50 ${
