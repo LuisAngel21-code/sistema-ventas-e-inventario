@@ -83,52 +83,52 @@ export default function InventarioPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
-        {tabs.map(t => {
-          const Icon = t.icon;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                tab === t.id ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {tab === 'movimientos' && (
-        <div className="flex gap-2">
-          {['', 'entrada', 'salida', 'ajuste'].map(t => (
-            <button key={t} onClick={() => setFiltroTipo(t)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filtroTipo === t ? 'bg-primary-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-              {t === '' ? 'Todos' : t === 'entrada' ? 'Entradas' : t === 'salida' ? 'Salidas' : 'Ajustes'}
-            </button>
-          ))}
+      {/* Tabs + Filters */}
+      <div className="flex items-center gap-3 bg-gray-100 p-1 rounded-lg w-full">
+        <div className="flex gap-1">
+          {tabs.map(t => {
+            const Icon = t.icon;
+            return (
+              <button key={t.id} onClick={() => setTab(t.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  tab === t.id ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700'
+                }`}>
+                <Icon className="w-4 h-4" />
+                {t.label}
+              </button>
+            );
+          })}
         </div>
-      )}
 
-      {tab === 'stock' && (
-        <div className="flex gap-3 items-center flex-wrap mb-3">
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input className="input-field pl-9" placeholder="Buscar producto..."
-              value={busqueda} onChange={e => setBusqueda(e.target.value)} />
-          </div>
-          <select className="input-field w-44" value={filtroCategoria}
-            onChange={e => setFiltroCategoria(e.target.value)}>
-            <option value="">Todas las categorías</option>
-            {[...new Set(stock.map(p => p.categoria).filter(Boolean))].map(c => (
-              <option key={c} value={c}>{c}</option>
+        {tab === 'movimientos' && (
+          <div className="flex gap-1">
+            {['', 'entrada', 'salida', 'ajuste'].map(t => (
+              <button key={t} onClick={() => setFiltroTipo(t)}
+                className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${filtroTipo === t ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700'}`}>
+                {t === '' ? 'Todos' : t === 'entrada' ? 'Entradas' : t === 'salida' ? 'Salidas' : 'Ajustes'}
+              </button>
             ))}
-          </select>
-        </div>
-      )}
+          </div>
+        )}
+
+        {tab === 'stock' && (
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <input className="pl-8 pr-2 py-1.5 text-xs border border-gray-200 rounded w-40 bg-white"
+                placeholder="Buscar producto..."
+                value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+            </div>
+            <select className="text-xs border border-gray-200 rounded py-1.5 px-2 w-36 bg-white"
+              value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}>
+              <option value="">Todas las categorías</option>
+              {[...new Set(stock.map(p => p.categoria).filter(Boolean))].map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
 
       {tab === 'stock' ? (
         <div className="card-page overflow-hidden">
