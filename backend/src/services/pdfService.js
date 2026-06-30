@@ -24,8 +24,8 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
   doc.y = cardTop + 90;
 
   const tableTop = doc.y;
-  const colWidths = [55, 75, 28, 55, 55, 55, 50, 55];
-  const headers = ['Fecha', 'Producto', 'Cant', 'Costo', 'P.Base', 'P.Venta', 'Sobrep.', 'Subtotal'];
+  const colWidths = [50, 70, 35, 28, 50, 50, 50, 45, 50];
+  const headers = ['Fecha', 'Producto', 'Tipo', 'Cant', 'Costo', 'P.Base', 'P.Venta', 'Sobrep.', 'Subtotal'];
 
   doc.rect(margin, tableTop, usableWidth, 18).fill('#2c3e50');
   doc.fillColor('#fff');
@@ -54,6 +54,7 @@ function generarReporteVendedor(doc, vendedor, ventas, resumen) {
     const row = [
       new Date(v.fecha).toLocaleDateString('es-PE'),
       (v.producto_nombre || '').substring(0, 14),
+      v.tipo_venta === 'contrato' ? 'Pedido' : v.tipo_venta === 'separacion' ? 'Sep.' : 'Directa',
       String(v.cantidad || 1),
       `S/ ${Number(v.costo_unitario).toFixed(2)}`,
       `S/ ${Number(v.precio_base_unitario).toFixed(2)}`,

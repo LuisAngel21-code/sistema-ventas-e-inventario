@@ -36,13 +36,23 @@ function calcularResumenVentas(ventas) {
   let totalComision = 0;
   let totalSobreprecio = 0;
   let totalGananciaSobreprecio = 0;
+  let procesadas = {};
 
   for (const v of ventas) {
     totalVentas += Number(v.subtotal) || 0;
-    totalComision += (calcularComision(Number(v.precio_base_unitario)) * (Number(v.cantidad) || 1));
-    const sp = calcularSobreprecio(Number(v.precio_final_unitario), Number(v.precio_base_unitario));
-    totalSobreprecio += sp * (Number(v.cantidad) || 1);
-    totalGananciaSobreprecio += Math.round(sp * PORCENTAJE_SOBREPRECIO_VENDEDOR * 100) / 100 * (Number(v.cantidad) || 1);
+
+    if (v.tipo_venta === 'contrato' || v.tipo_venta === 'separacion') {
+      if (!procesadas[v.venta_id]) {
+        const comisionActa = Number(v.monto_acta || 0) * TASA_COMISION;
+        totalComision += Math.round(comisionActa * 100) / 100;
+        procesadas[v.venta_id] = true;
+      }
+    } else {
+      totalComision += (calcularComision(Number(v.precio_base_unitario)) * (Number(v.cantidad) || 1));
+      const sp = calcularSobreprecio(Number(v.precio_final_unitario), Number(v.precio_base_unitario));
+      totalSobreprecio += sp * (Number(v.cantidad) || 1);
+      totalGananciaSobreprecio += Math.round(sp * PORCENTAJE_SOBREPRECIO_VENDEDOR * 100) / 100 * (Number(v.cantidad) || 1);
+    }
   }
 
   totalVentas = Math.round(totalVentas * 100) / 100;

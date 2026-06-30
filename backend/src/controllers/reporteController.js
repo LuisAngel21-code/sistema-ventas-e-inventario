@@ -36,7 +36,7 @@ exports.reportePorVendedor = async (req, res) => {
     }
 
     let sql = `
-      SELECT dv.*, v.fecha, p.nombre AS producto_nombre, p.codigo AS producto_codigo
+      SELECT dv.*, v.fecha, v.tipo_venta, v.monto_acta, p.nombre AS producto_nombre, p.codigo AS producto_codigo
       FROM detalle_ventas dv
       JOIN ventas v ON dv.venta_id = v.id
       JOIN productos p ON dv.producto_id = p.id
@@ -94,7 +94,7 @@ exports.reportePorTrabajador = async (req, res) => {
     }
 
     let sql = `
-      SELECT dv.*, v.fecha, p.nombre AS producto_nombre, p.codigo AS producto_codigo
+      SELECT dv.*, v.fecha, v.tipo_venta, v.monto_acta, p.nombre AS producto_nombre, p.codigo AS producto_codigo
       FROM detalle_ventas dv
       JOIN ventas v ON dv.venta_id = v.id
       JOIN productos p ON dv.producto_id = p.id
@@ -128,7 +128,7 @@ exports.reporteGeneral = async (req, res) => {
     const { desde, hasta } = req.query;
 
     let sql = `
-      SELECT dv.*, v.fecha, v.vendedor_id, v.total AS venta_total,
+      SELECT dv.*, v.fecha, v.tipo_venta, v.monto_acta, v.vendedor_id, v.total AS venta_total,
              ve.nombre AS vendedor_nombre, ve.apellido AS vendedor_apellido,
              p.nombre AS producto_nombre, p.codigo AS producto_codigo
       FROM detalle_ventas dv
