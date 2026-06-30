@@ -5,7 +5,7 @@ exports.getAll = async (req, res) => {
   try {
     const { desde, hasta, vendedor_id } = req.query;
     let sql = `
-      SELECT v.id, v.fecha, v.total, v.tipo_comprobante, v.metodo_pago, v.nro_comprobante,
+      SELECT v.id, v.fecha, v.total, v.tipo_venta, v.tipo_comprobante, v.metodo_pago, v.nro_comprobante,
              COALESCE(ve.nombre, t.nombre) AS vendedor_nombre,
              COALESCE(ve.apellido, t.apellido) AS vendedor_apellido
       FROM ventas v

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ventasAPI, vendedoresAPI, getDownloadUrl } from '../services/api';
 import { ShoppingCart, Plus, Search, Trash2, Calendar, User, FileSpreadsheet } from 'lucide-react';
-import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
+import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { useToast } from '../context/ToastContext';
@@ -99,6 +99,7 @@ export default function VentasPage() {
                   <th className="table-header">
                     <div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Vendedor</div>
                   </th>
+                  <th className="table-header text-center">Tipo</th>
                   <th className="table-header text-right">Total</th>
                   <th className="table-header text-right">Acciones</th>
                 </tr>
@@ -109,6 +110,12 @@ export default function VentasPage() {
                     <td className="table-cell text-gray-400">{v.id}</td>
                     <td className="table-cell text-gray-700">{new Date(v.fecha).toLocaleDateString('es-PE')}</td>
                     <td className="table-cell text-gray-700">{v.vendedor_nombre} {v.vendedor_apellido}</td>
+                    <td className="table-cell text-center">
+                      {v.tipo_venta === 'directa' ? <Badge variant="success">Directa</Badge> :
+                       v.tipo_venta === 'contrato' ? <Badge variant="warning">Pedido</Badge> :
+                       v.tipo_venta === 'separacion' ? <Badge variant="info">Separac.</Badge> :
+                       <Badge variant="neutral">Directa</Badge>}
+                    </td>
                     <td className="table-cell text-right font-semibold text-gray-900">S/ {Number(v.total).toFixed(2)}</td>
                     <td className="table-cell text-right">
                       <div className="flex items-center justify-end gap-1">
@@ -124,7 +131,7 @@ export default function VentasPage() {
                 ))}
                 {ventas.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="text-center py-12 text-gray-400">
+                    <td colSpan={6} className="text-center py-12 text-gray-400">
                       <ShoppingCart className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       No hay ventas registradas
                     </td>
