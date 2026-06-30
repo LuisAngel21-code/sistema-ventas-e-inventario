@@ -112,14 +112,14 @@ export default function InventarioPage() {
         )}
 
         {tab === 'stock' && (
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-              <input className="pl-8 pr-2 py-1.5 text-xs border border-gray-200 rounded w-40 bg-white"
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input className="input-field pl-9 py-1.5 text-sm w-48"
                 placeholder="Buscar producto..."
                 value={busqueda} onChange={e => setBusqueda(e.target.value)} />
             </div>
-            <select className="text-xs border border-gray-200 rounded py-1.5 px-2 w-36 bg-white"
+            <select className="input-field py-1.5 text-sm w-40"
               value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}>
               <option value="">Todas las categorías</option>
               {[...new Set(stock.map(p => p.categoria).filter(Boolean))].map(c => (
