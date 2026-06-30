@@ -356,6 +356,17 @@ async function initDatabase() {
 
   await query(`
     DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='ventas' AND column_name='tipo_venta') THEN
+        ALTER TABLE ventas ADD COLUMN tipo_venta VARCHAR(20) DEFAULT 'directa';
+        ALTER TABLE ventas ADD COLUMN monto_acta DECIMAL(10,2) DEFAULT 0;
+        ALTER TABLE ventas DROP CONSTRAINT IF EXISTS ventas_estado_check;
+        ALTER TABLE ventas ADD CONSTRAINT ventas_estado_check CHECK (estado IN ('completada', 'pendiente'));
+      END IF;
+    END $$;
+  `);
+
+  await query(`
+    DO $$ BEGIN
       IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='productos' AND column_name='proveedor') THEN
         ALTER TABLE productos ADD COLUMN proveedor VARCHAR(200);
         ALTER TABLE productos ADD COLUMN tipo VARCHAR(50);

@@ -96,19 +96,20 @@ exports.calcular = async (req, res) => {
 
     for (const v of vendedores) {
       const { rows: ventas } = await query(`
-        SELECT COALESCE(SUM(dv.precio_base_unitario * dv.cantidad) * 0.02, 0) as total_comision,
-               COALESCE(SUM(CASE WHEN dv.precio_final_unitario > dv.precio_base_unitario THEN (dv.precio_final_unitario - dv.precio_base_unitario) * dv.cantidad * 0.5 ELSE 0 END), 0) as total_sobreprecio
+        SELECT COALESCE(SUM(CASE WHEN vv.tipo_venta IN ('contrato', 'separacion') THEN 0 ELSE dv.precio_base_unitario * dv.cantidad * 0.02 END), 0) as total_comision,
+               COALESCE(SUM(CASE WHEN vv.tipo_venta IN ('contrato', 'separacion') THEN 0 ELSE CASE WHEN dv.precio_final_unitario > dv.precio_base_unitario THEN (dv.precio_final_unitario - dv.precio_base_unitario) * dv.cantidad * 0.5 ELSE 0 END END), 0) as total_sobreprecio,
+               COALESCE(SUM(CASE WHEN vv.tipo_venta IN ('contrato', 'separacion') THEN vv.monto_acta * 0.02 ELSE 0 END), 0) as total_comision_acta
         FROM ventas vv JOIN detalle_ventas dv ON dv.venta_id = vv.id
-        WHERE vv.vendedor_id = $1 AND vv.fecha >= $2 AND vv.fecha <= $3 AND vv.estado = 'completada'
+        WHERE vv.vendedor_id = $1 AND vv.fecha >= $2 AND vv.fecha <= $3
       `, [v.id, semana_inicio, semana_fin]);
-      const totalPago = Math.round((Number(v.sueldo_fijo) + Number(ventas[0].total_comision) + Number(ventas[0].total_sobreprecio)) * 100) / 100;
+      const totalPago = Math.round((Number(v.sueldo_fijo) + Number(ventas[0].total_comision) + Number(ventas[0].total_comision_acta) + Number(ventas[0].total_sobreprecio)) * 100) / 100;
       const { rows: existente } = await query("SELECT id, estado FROM pagos_vendedor WHERE vendedor_id = $1 AND semana_inicio = $2", [v.id, semana_inicio]);
 
       if (existente.length > 0) {
         if (existente[0].estado === 'pagado') { mensajes.push(`${v.nombre} ${v.apellido} - ya pagado`); continue; }
-        await query('UPDATE pagos_vendedor SET total_comision=$1, total_sobreprecio=$2, total_pago=$3 WHERE id=$4', [ventas[0].total_comision, ventas[0].total_sobreprecio, totalPago, existente[0].id]);
+        await query('UPDATE pagos_vendedor SET total_comision=$1, total_sobreprecio=$2, total_pago=$3 WHERE id=$4', [Number(ventas[0].total_comision) + Number(ventas[0].total_comision_acta), ventas[0].total_sobreprecio, totalPago, existente[0].id]);
       } else {
-        await query('INSERT INTO pagos_vendedor (vendedor_id, semana_inicio, semana_fin, sueldo_base, total_comision, total_sobreprecio, total_pago) VALUES ($1,$2,$3,$4,$5,$6,$7)', [v.id, semana_inicio, semana_fin, v.sueldo_fijo, ventas[0].total_comision, ventas[0].total_sobreprecio, totalPago]);
+        await query('INSERT INTO pagos_vendedor (vendedor_id, semana_inicio, semana_fin, sueldo_base, total_comision, total_sobreprecio, total_pago) VALUES ($1,$2,$3,$4,$5,$6,$7)', [v.id, semana_inicio, semana_fin, v.sueldo_fijo, Number(ventas[0].total_comision) + Number(ventas[0].total_comision_acta), ventas[0].total_sobreprecio, totalPago]);
       }
       mensajes.push(`${v.nombre} ${v.apellido} - S/ ${totalPago.toFixed(2)}`);
     }

@@ -96,6 +96,7 @@ export const ventasAPI = {
     });
   },
   remove: (id) => request(`/api/ventas/${id}`, { method: 'DELETE' }),
+  abonar: (id, monto) => request(`/api/ventas/${id}/abonar`, { method: 'PUT', body: { monto } }),
 };
 
 export const inventarioAPI = {

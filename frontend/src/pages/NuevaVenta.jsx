@@ -19,6 +19,8 @@ export default function NuevaVenta() {
   const [saving, setSaving] = useState(false);
   const [tipoComprobante, setTipoComprobante] = useState('boleta');
   const [metodoPago, setMetodoPago] = useState('efectivo');
+  const [tipoVenta, setTipoVenta] = useState('directa');
+  const [montoActa, setMontoActa] = useState('');
   const [nroComprobante, setNroComprobante] = useState('');
   const [comprobanteFile, setComprobanteFile] = useState(null);
   const [voucherFile, setVoucherFile] = useState(null);
@@ -89,6 +91,8 @@ export default function NuevaVenta() {
       } else {
         formData.append('vendedor_id', Number(vendedorId));
       }
+      formData.append('tipo_venta', tipoVenta);
+      if (tipoVenta !== 'directa') formData.append('monto_acta', Number(montoActa));
       formData.append('tipo_comprobante', tipoComprobante);
       formData.append('metodo_pago', metodoPago);
       formData.append('nro_comprobante', nroComprobante);
@@ -131,6 +135,15 @@ export default function NuevaVenta() {
         <div className="card-page p-5 space-y-4">
           <h3 className="text-sm font-display font-semibold text-gray-900">Información de pago</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="input-label">Tipo de venta</label>
+              <select className="input-field" value={tipoVenta}
+                onChange={e => setTipoVenta(e.target.value)}>
+                <option value="directa">Directa</option>
+                <option value="contrato">Contrato (pedido)</option>
+                <option value="separacion">Separación</option>
+              </select>
+            </div>
             <Select
               label="Tipo comprobante *"
               value={tipoComprobante}
@@ -155,6 +168,10 @@ export default function NuevaVenta() {
               ]}
             />
           </div>
+          {tipoVenta !== 'directa' && (
+            <Input label="Monto del acta (S/)" type="number" step="0.01" value={montoActa}
+              onChange={e => setMontoActa(e.target.value)} required />
+          )}
           <Input
             label="Nro. de comprobante *"
             value={nroComprobante}

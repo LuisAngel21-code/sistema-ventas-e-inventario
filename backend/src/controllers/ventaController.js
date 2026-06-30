@@ -60,7 +60,7 @@ exports.getById = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  let { vendedor_id, trabajador_id, productos, tipo_comprobante, metodo_pago, nro_comprobante } = req.body;
+  let { vendedor_id, trabajador_id, productos, tipo_comprobante, metodo_pago, nro_comprobante, tipo_venta, monto_acta } = req.body;
   if (typeof productos === 'string') productos = JSON.parse(productos);
   const files = req.files || {};
 
@@ -126,9 +126,13 @@ exports.create = async (req, res) => {
 
     totalVenta = Math.round(totalVenta * 100) / 100;
 
+    const esActa = tipo_venta && tipo_venta !== 'directa';
+    const estadoVenta = esActa ? 'pendiente' : 'completada';
+    const montoTotal = esActa ? (Number(monto_acta) || 0) : totalVenta;
+
     const { rows: ventaResult } = await client.query(
-      "INSERT INTO ventas (vendedor_id, trabajador_id, total, tipo_comprobante, metodo_pago, nro_comprobante, voucher_url, comprobante_url, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'completada') RETURNING id",
-      [vendedor_id || null, trabajador_id || null, totalVenta, tipo_comprobante, metodo_pago, nro_comprobante, voucherUrl, comprobanteUrl]
+      "INSERT INTO ventas (vendedor_id, trabajador_id, total, tipo_comprobante, metodo_pago, nro_comprobante, voucher_url, comprobante_url, estado, tipo_venta, monto_acta) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id",
+      [vendedor_id || null, trabajador_id || null, montoTotal, tipo_comprobante, metodo_pago, nro_comprobante, voucherUrl, comprobanteUrl, estadoVenta, tipo_venta || 'directa', Number(monto_acta) || 0]
     );
     const ventaId = ventaResult[0].id;
 
@@ -155,6 +159,44 @@ exports.create = async (req, res) => {
       total: totalVenta,
       message: 'Venta registrada exitosamente',
     });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+};
+
+exports.abonar = async (req, res) => {
+  const { monto } = req.body;
+  if (!monto || monto <= 0) return res.status(400).json({ error: 'Monto válido requerido' });
+
+  const client = await getConnection();
+  try {
+    await client.query('BEGIN');
+
+    const { rows: venta } = await client.query(
+      "SELECT * FROM ventas WHERE id = $1 AND estado = 'pendiente' AND tipo_venta IN ('contrato', 'separacion') FOR UPDATE",
+      [req.params.id]
+    );
+    if (venta.length === 0) return res.status(404).json({ error: 'Venta pendiente no encontrada' });
+
+    const nuevoActo = Number(venta[0].monto_acta) + Number(monto);
+    const nuevoTotal = Number(venta[0].total) + Number(monto);
+    const { rows: detalles } = await client.query(
+      'SELECT SUM(dv.precio_base_unitario * dv.cantidad) as total_base FROM detalle_ventas dv WHERE dv.venta_id = $1',
+      [req.params.id]
+    );
+    const totalBase = Number(detalles[0]?.total_base) || 0;
+    const completada = nuevoTotal >= totalBase;
+
+    await client.query(
+      'UPDATE ventas SET monto_acta = $1, total = $2, estado = $3 WHERE id = $4',
+      [nuevoActo, nuevoTotal, completada ? 'completada' : 'pendiente', req.params.id]
+    );
+
+    await client.query('COMMIT');
+    res.json({ message: completada ? 'Venta completada' : 'Abono registrado', total: nuevoTotal, estado: completada ? 'completada' : 'pendiente' });
   } catch (error) {
     await client.query('ROLLBACK');
     res.status(500).json({ error: error.message });

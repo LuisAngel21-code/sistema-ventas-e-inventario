@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ventasAPI } from '../services/api';
-import { ArrowLeft, Receipt, User, Calendar, Hash, CreditCard, FileText, Image } from 'lucide-react';
+import { ArrowLeft, Receipt, User, Calendar, Hash, CreditCard, FileText, Image, Plus } from 'lucide-react';
+import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
+import Input from '../components/ui/Input';
+import { useToast } from '../context/ToastContext';
 
 export default function VentaDetalle() {
   const { id } = useParams();
   const [venta, setVenta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imageModal, setImageModal] = useState(null);
+  const [showAbonar, setShowAbonar] = useState(false);
+  const [abonoMonto, setAbonoMonto] = useState('');
+  const { showToast } = useToast();
 
   useEffect(() => {
     ventasAPI.getById(id)
@@ -20,6 +26,18 @@ export default function VentaDetalle() {
       })
       .catch(console.error);
   }, [id]);
+
+  async function handleAbonar(e) {
+    e.preventDefault();
+    try {
+      const res = await ventasAPI.abonar(id, Number(abonoMonto));
+      showToast(res.message, 'success');
+      setShowAbonar(false);
+      setAbonoMonto('');
+      const data = await ventasAPI.getById(id);
+      setVenta(data);
+    } catch (err) { showToast(err.message, 'error'); }
+  }
 
   if (loading) return <Spinner size="lg" className="h-64" />;
   if (!venta) return <p className="text-gray-500">Venta no encontrada</p>;
@@ -31,8 +49,11 @@ export default function VentaDetalle() {
           <Button variant="ghost" icon={ArrowLeft}>Volver</Button>
         </Link>
         <div>
-          <div>
+          <div className="flex items-center gap-3">
             <h1 className="page-title">Venta #{venta.id}</h1>
+            {venta.tipo_venta === 'contrato' && <Badge variant="warning">Contrato</Badge>}
+            {venta.tipo_venta === 'separacion' && <Badge variant="info">Separación</Badge>}
+            {venta.estado === 'pendiente' && <Badge variant="neutral">Pendiente</Badge>}
           </div>
           <p className="page-subtitle">Detalle de la transacción</p>
         </div>
@@ -114,6 +135,43 @@ export default function VentaDetalle() {
           </div>
         </div>
       </div>
+
+      {/* Progress for contracts */}
+      {venta.tipo_venta && venta.tipo_venta !== 'directa' && (
+        <div className="card-page p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                {venta.tipo_venta === 'contrato' ? 'Contrato' : 'Separación'} — Progreso de pago
+              </p>
+              <p className="text-xs text-gray-500">
+                Acta: S/ {Number(venta.monto_acta).toFixed(2)} de S/ {Number(venta.total).toFixed(2)}
+              </p>
+            </div>
+            {venta.estado === 'pendiente' && (
+              <button onClick={() => setShowAbonar(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-700 text-white text-sm font-medium rounded-lg hover:bg-primary-800 transition-colors">
+                <Plus className="w-4 h-4" /> Abonar
+              </button>
+            )}
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-2.5">
+            <div className="bg-emerald-500 h-2.5 rounded-full transition-all duration-300"
+              style={{ width: `${Math.min(100, (Number(venta.monto_acta) / Math.max(Number(venta.total), 1)) * 100)}%` }} />
+          </div>
+        </div>
+      )}
+
+      <Modal open={showAbonar} onClose={() => setShowAbonar(false)} title="Registrar Abono">
+        <form onSubmit={handleAbonar} className="space-y-4">
+          <Input label="Monto del abono (S/)" type="number" step="0.01" value={abonoMonto}
+            onChange={e => setAbonoMonto(e.target.value)} required />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="secondary" type="button" onClick={() => setShowAbonar(false)}>Cancelar</Button>
+            <Button type="submit">Registrar Abono</Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Detail table */}
       <div className="card-page overflow-hidden">
