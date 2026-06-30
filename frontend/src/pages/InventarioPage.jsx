@@ -108,10 +108,10 @@ export default function InventarioPage() {
 
         {tab === 'movimientos' && (
           <div className="flex gap-1">
-            {['', 'entrada', 'salida', 'ajuste'].map(t => (
+            {['', 'entrada', 'salida'].map(t => (
               <button key={t} onClick={() => setFiltroTipo(t)}
                 className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${filtroTipo === t ? 'bg-white shadow-sm text-primary-700' : 'text-gray-500 hover:text-gray-700'}`}>
-                {t === '' ? 'Todos' : t === 'entrada' ? 'Entradas' : t === 'salida' ? 'Salidas' : 'Ajustes'}
+                {t === '' ? 'Todos' : t === 'entrada' ? 'Entradas' : 'Salidas'}
               </button>
             ))}
           </div>
