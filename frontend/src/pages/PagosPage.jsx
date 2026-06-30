@@ -155,43 +155,49 @@ export default function PagosPage() {
               )}
 
               <div className="bg-gray-50 rounded-lg px-3.5 py-3 space-y-1.5 text-sm mb-3 mt-auto">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-gray-500">Total</span>
                   <span className="font-medium text-gray-900 tabular-nums">S/&nbsp;{Number(p.total).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Adelanto</span>
-                  <div className="flex items-center gap-1.5">
-                    {adelantoEdit === p.id && adelantoEditFuente === p.fuente ? (
-                      <div className="flex items-center gap-1">
-                        <input type="number" step="0.01" className="w-16 px-2 py-1 text-xs border border-gray-200 rounded text-right tabular-nums"
-                          value={adelantoMonto} onChange={e => setAdelantoMonto(e.target.value)} autoFocus />
-                        <button onClick={() => registrarAdelanto(p.id, p.fuente)}
-                          className="px-2 py-0.5 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700">
-                          OK
-                        </button>
-                        <button onClick={() => setAdelantoEdit(null)}
-                          className="text-xs text-gray-400 hover:text-gray-600">✕</button>
-                      </div>
-                    ) : (
-                      <>
-                        <span className="text-red-600 font-medium tabular-nums">
-                          -&nbsp;S/&nbsp;{Number(p.adelanto || 0).toFixed(2)}
-                          {p.fecha_adelanto && <span className="text-xs text-gray-400 ml-1">({new Date(p.fecha_adelanto).toLocaleDateString('es-PE')})</span>}
-                        </span>
-                        {p.estado !== 'pagado' && (
-                          <button onClick={() => { setAdelantoEdit(p.id); setAdelantoEditFuente(p.fuente); setAdelantoMonto(p.adelanto || ''); }}
-                            className="text-xs text-primary-600 hover:text-primary-700 underline ml-0.5">
-                            {Number(p.adelanto || 0) > 0 ? 'Editar' : 'Añadir'}
-                          </button>
-                        )}
-                      </>
+                <div className="flex items-center justify-between py-1.5">
+                  <span className="text-xs text-gray-500">Adelantos</span>
+                  <div className="flex flex-col items-end">
+                    <span className="text-red-600 font-medium tabular-nums text-sm">
+                      -&nbsp;S/&nbsp;{Number(p.adelanto || 0).toFixed(2)}
+                    </span>
+                    {p.fecha_adelanto && (
+                      <span className="text-[10px] text-gray-400">Último: {new Date(p.fecha_adelanto).toLocaleDateString('es-PE')}</span>
                     )}
                   </div>
                 </div>
-                <div className="border-t border-gray-200 pt-1.5 flex justify-between">
-                  <span className="text-sm font-display font-semibold text-gray-900">Neto</span>
-                  <span className="text-base font-display font-bold text-primary-700 tabular-nums">S/&nbsp;{neto.toFixed(2)}</span>
+                {p.estado !== 'pagado' && (
+                  <div className="flex justify-end pt-0.5 pb-1">
+                    {adelantoEdit === p.id && adelantoEditFuente === p.fuente ? (
+                      <div className="flex items-center gap-1">
+                        <div className="relative">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">S/</span>
+                          <input type="number" step="0.01"
+                            className="w-20 pl-5 pr-2 py-1.5 text-xs border border-gray-200 rounded text-right tabular-nums"
+                            value={adelantoMonto} onChange={e => setAdelantoMonto(e.target.value)} autoFocus />
+                        </div>
+                        <button onClick={() => registrarAdelanto(p.id, p.fuente)}
+                          className="px-2.5 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded hover:bg-emerald-700 transition-colors">
+                          Guardar
+                        </button>
+                        <button onClick={() => setAdelantoEdit(null)}
+                          className="px-2 py-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">Cancelar</button>
+                      </div>
+                    ) : (
+                      <button onClick={() => { setAdelantoEdit(p.id); setAdelantoEditFuente(p.fuente); setAdelantoMonto(''); }}
+                        className="px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-medium rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors">
+                        + Adelanto
+                      </button>
+                    )}
+                  </div>
+                )}
+                <div className="border-t-2 border-primary-700 pt-1.5 flex justify-between items-center">
+                  <span className="text-sm font-display font-semibold text-gray-900">Neto a pagar</span>
+                  <span className="text-lg font-display font-bold text-primary-700 tabular-nums">S/&nbsp;{neto.toFixed(2)}</span>
                 </div>
               </div>
 

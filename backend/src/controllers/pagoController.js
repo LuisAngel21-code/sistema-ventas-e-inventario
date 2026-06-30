@@ -179,7 +179,7 @@ exports.adelanto = async (req, res) => {
     const { monto, fuente } = req.body;
     const table = fuente === 'trabajador' ? 'pagos_trabajadores' : 'pagos_vendedor';
     const { rows } = await query(
-      `UPDATE ${table} SET adelanto = $1, fecha_adelanto = NOW() WHERE id = $2 RETURNING *`,
+      `UPDATE ${table} SET adelanto = COALESCE(adelanto, 0) + $1, fecha_adelanto = NOW() WHERE id = $2 RETURNING *`,
       [monto || 0, req.params.id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Pago no encontrado' });
