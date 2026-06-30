@@ -23,7 +23,7 @@ exports.getMovimientos = async (req, res) => {
   try {
     const { producto_id, tipo } = req.query;
     let sql = `
-      SELECT im.*, p.nombre AS producto_nombre, p.codigo AS producto_codigo
+      SELECT im.*, p.nombre AS producto_nombre, p.codigo AS producto_codigo, p.medida
       FROM inventario_movimientos im
       JOIN productos p ON im.producto_id = p.id
       WHERE 1=1`;

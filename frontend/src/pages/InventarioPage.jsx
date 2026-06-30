@@ -195,6 +195,7 @@ export default function InventarioPage() {
                   <tr className="bg-gray-50/50">
                     <th className="table-header">Fecha</th>
                     <th className="table-header">Producto</th>
+                    <th className="table-header">Medida</th>
                     <th className="table-header text-center">Tipo</th>
                     <th className="table-header text-right">Cantidad</th>
                     <th className="table-header">Referencia</th>
@@ -205,6 +206,7 @@ export default function InventarioPage() {
                     <tr key={m.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                       <td className="table-cell text-gray-500 text-xs">{new Date(m.created_at).toLocaleString('es-PE')}</td>
                       <td className="table-cell font-medium text-gray-900">{m.producto_nombre}</td>
+                      <td className="table-cell text-gray-500">{m.medida || '—'}</td>
                       <td className="table-cell text-center">
                         {m.tipo === 'entrada' ? <Badge variant="success">Entrada</Badge> :
                          m.tipo === 'salida' ? <Badge variant="warning">Salida</Badge> :
