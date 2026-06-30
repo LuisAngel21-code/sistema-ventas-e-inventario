@@ -386,6 +386,14 @@ async function initDatabase() {
     END $$;
   `);
 
+  await query(`
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='productos' AND column_name='tipo_tela') THEN
+        ALTER TABLE productos ADD COLUMN tipo_tela VARCHAR(100);
+      END IF;
+    END $$;
+  `);
+
   console.log('Base de datos inicializada correctamente');
 }
 

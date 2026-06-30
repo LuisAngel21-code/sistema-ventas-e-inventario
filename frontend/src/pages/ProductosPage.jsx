@@ -11,7 +11,7 @@ import { useToast } from '../context/ToastContext';
 
 const emptyProduct = {
   codigo: '', nombre: '', costo: '', categoria: '',
-  marca_id: '', proveedor: '', tipo: '', medida: '',
+  marca_id: '', proveedor: '', tipo: '', medida: '', tipo_tela: '',
   stock: 0, stock_minimo: 0, precio_venta: '',
 };
 
@@ -66,6 +66,7 @@ export default function ProductosPage() {
         proveedor: prod.proveedor || '',
         tipo: prod.tipo || '',
         medida: prod.medida || '',
+        tipo_tela: prod.tipo_tela || '',
         stock: prod.stock || 0,
         stock_minimo: prod.stock_minimo || 0,
         precio_venta: prod.precio_venta || '',
@@ -305,6 +306,11 @@ export default function ProductosPage() {
                   <option value="madera">Madera</option>
                   <option value="tapizada">Tapizada</option>
                 </select>
+                {form.tipo === 'tapizada' && (
+                  <input className="input-field mt-2" placeholder="Tipo de tela (ej: Chenille, Tela, Cuero...)"
+                    value={form.tipo_tela}
+                    onChange={(e) => setForm({ ...form, tipo_tela: e.target.value })} />
+                )}
               </div>
             )}
           </div>

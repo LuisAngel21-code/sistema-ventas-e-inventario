@@ -4,7 +4,7 @@ const { calcularPrecioBase } = require('../utils/calculations');
 exports.getAll = async (req, res) => {
   try {
     const { activo, categoria } = req.query;
-    let sql = 'SELECT id, codigo, nombre, descripcion, costo, precio_base, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, proveedor, tipo, medida, imagen_url, activo FROM productos';
+    let sql = 'SELECT id, codigo, nombre, descripcion, costo, precio_base, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, proveedor, tipo, medida, tipo_tela, imagen_url, activo FROM productos';
     const params = [];
     const conditions = [];
 
@@ -39,12 +39,12 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { codigo, nombre, descripcion, costo, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, proveedor, tipo, medida } = req.body;
+    const { codigo, nombre, descripcion, costo, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, proveedor, tipo, medida, tipo_tela } = req.body;
     const precio_base = calcularPrecioBase(costo);
 
     const { rows } = await query(
-      'INSERT INTO productos (codigo, nombre, descripcion, costo, precio_base, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, proveedor, tipo, medida) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id',
-      [codigo, nombre, descripcion, costo, precio_base, precio_venta || null, stock || 0, stock_minimo || 0, categoria, categoria_id || null, marca_id || null, proveedor || null, tipo || null, medida || null]
+      'INSERT INTO productos (codigo, nombre, descripcion, costo, precio_base, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, proveedor, tipo, medida, tipo_tela) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id',
+      [codigo, nombre, descripcion, costo, precio_base, precio_venta || null, stock || 0, stock_minimo || 0, categoria, categoria_id || null, marca_id || null, proveedor || null, tipo || null, medida || null, tipo_tela || null]
     );
 
     if (stock > 0) {
@@ -62,7 +62,7 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const { codigo, nombre, descripcion, costo, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, proveedor, tipo, medida, activo } = req.body;
+    const { codigo, nombre, descripcion, costo, precio_venta, stock, stock_minimo, categoria, categoria_id, marca_id, proveedor, tipo, medida, tipo_tela, activo } = req.body;
 
     const fields = [];
     const params = [];
@@ -86,6 +86,7 @@ exports.update = async (req, res) => {
     if (proveedor !== undefined) { fields.push(`proveedor = $${idx++}`); params.push(proveedor); }
     if (tipo !== undefined) { fields.push(`tipo = $${idx++}`); params.push(tipo); }
     if (medida !== undefined) { fields.push(`medida = $${idx++}`); params.push(medida); }
+    if (tipo_tela !== undefined) { fields.push(`tipo_tela = $${idx++}`); params.push(tipo_tela); }
     if (activo !== undefined) { fields.push(`activo = $${idx++}`); params.push(activo); }
 
     if (fields.length === 0) return res.status(400).json({ error: 'No hay campos para actualizar' });
