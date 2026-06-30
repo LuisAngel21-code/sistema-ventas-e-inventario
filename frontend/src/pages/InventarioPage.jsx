@@ -20,6 +20,8 @@ export default function InventarioPage() {
   const [filtroTipo, setFiltroTipo] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
 
   function loadStock() {
     setLoading(true);
@@ -77,8 +79,12 @@ export default function InventarioPage() {
           <h1 className="page-title">Inventario</h1>
           <p className="page-subtitle">Control de existencias</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => window.open(getDownloadUrl('/api/exportes/inventario'), '_blank')} icon={FileSpreadsheet}>Excel</Button>
+        <div className="flex gap-2 items-center">
+          <input type="date" className="input-field py-1.5 text-sm w-36" value={fechaDesde}
+            onChange={e => setFechaDesde(e.target.value)} placeholder="Desde" />
+          <input type="date" className="input-field py-1.5 text-sm w-36" value={fechaHasta}
+            onChange={e => setFechaHasta(e.target.value)} placeholder="Hasta" />
+          <Button variant="secondary" onClick={() => window.open(getDownloadUrl(`/api/exportes/inventario?desde=${fechaDesde}&hasta=${fechaHasta}`), '_blank')} icon={FileSpreadsheet}>Excel</Button>
           <Button onClick={() => setEntryOpen(true)} icon={Plus}>Entrada de Stock</Button>
         </div>
       </div>

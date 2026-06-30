@@ -57,12 +57,14 @@ exports.ventas = async (req, res) => {
 
 exports.inventario = async (req, res) => {
   try {
-    const { tipo } = req.query;
+    const { tipo, desde, hasta } = req.query;
     const { rows: productos } = await query(
       "SELECT codigo, nombre, categoria, medida, costo, precio_base, stock, stock_minimo, CASE WHEN stock <= stock_minimo THEN 'Bajo' ELSE 'Normal' END as estado FROM productos WHERE activo = true ORDER BY nombre"
     );
     let sqlMov = 'SELECT im.created_at as fecha, p.nombre as producto, im.tipo, im.cantidad, im.referencia FROM inventario_movimientos im JOIN productos p ON im.producto_id = p.id WHERE 1=1';
     const params = []; let idx = 1;
+    if (desde) { sqlMov += ` AND im.created_at >= $${idx++}`; params.push(desde); }
+    if (hasta) { sqlMov += ` AND im.created_at <= $${idx++}`; params.push(hasta); }
     if (tipo) { sqlMov += ` AND im.tipo = $${idx++}`; params.push(tipo); }
     sqlMov += ' ORDER BY im.created_at DESC LIMIT 500';
     const { rows: movimientos } = await query(sqlMov, params);
