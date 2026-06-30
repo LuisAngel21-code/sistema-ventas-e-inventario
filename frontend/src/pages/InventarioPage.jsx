@@ -119,7 +119,7 @@ export default function InventarioPage() {
                 placeholder="Buscar producto..."
                 value={busqueda} onChange={e => setBusqueda(e.target.value)} />
             </div>
-            <select className="input-field py-1.5 text-sm w-40"
+            <select className="input-field py-1.5 text-sm w-48"
               value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}>
               <option value="">Todas las categorías</option>
               {[...new Set(stock.map(p => p.categoria).filter(Boolean))].map(c => (
