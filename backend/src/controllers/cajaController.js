@@ -183,71 +183,89 @@ exports.exportarReporte = async (req, res) => {
     const w = doc.page.width - m * 2;
     let y = m;
 
-    doc.font('Helvetica-Bold').fontSize(20).text('Mueblería Cams', m, y, { align: 'center', width: w });
-    y += 28;
-    doc.fontSize(14).font('Helvetica').text('Reporte Diario de Caja', m, y, { align: 'center', width: w });
+    // Header
+    doc.rect(m, y, w, 65).fill('#1e3a5f');
+    doc.fillColor('#fff').font('Helvetica-Bold').fontSize(18);
+    doc.text('Mueblería Cams', m, y + 10, { align: 'center', width: w });
+    doc.fontSize(12).font('Helvetica').text('Reporte Diario de Caja', m, y + 32, { align: 'center', width: w });
+    y += 75;
+
+    // Fecha + Estado
+    doc.fontSize(10).fillColor('#666').font('Helvetica');
+    doc.text(new Date(sesion[0].fecha_apertura).toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), m, y, { align: 'center', width: w });
+    y += 14;
+    const estadoTexto = sesion[0].estado === 'abierta' ? '● Caja abierta' : '● Caja cerrada';
+    doc.fillColor(sesion[0].estado === 'abierta' ? '#059669' : '#475569').font('Helvetica-Bold').fontSize(9);
+    doc.text(estadoTexto, m, y, { align: 'center', width: w });
     y += 20;
-    doc.fontSize(10).fillColor('#666')
-      .text(new Date(sesion[0].fecha_apertura).toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), m, y, { align: 'center', width: w });
-    y += 8;
-    doc.text(`Estado: ${sesion[0].estado === 'abierta' ? 'Abierta' : 'Cerrada'}`, m, y, { align: 'center', width: w });
-    y += 25;
 
     // Saldo inicial
-    doc.rect(m, y, w, 20).fill('#f8f9fa');
-    doc.fillColor('#333').font('Helvetica-Bold').fontSize(11);
-    doc.text('Saldo inicial:', m + 10, y + 5);
-    doc.text(`S/ ${Number(sesion[0].saldo_inicial).toFixed(2)}`, m + w - 10, y + 5, { align: 'right' });
-    y += 28;
+    doc.rect(m, y, w, 22).fill('#f0fdf4');
+    doc.fillColor('#166534').font('Helvetica-Bold').fontSize(11);
+    doc.text('Saldo inicial:', m + 12, y + 6);
+    doc.text(`S/ ${Number(sesion[0].saldo_inicial).toFixed(2)}`, m + w - 12, y + 6, { align: 'right' });
+    y += 32;
 
     // Tabla movimientos
     doc.fillColor('#1e3a5f').font('Helvetica-Bold').fontSize(10);
     doc.text('MOVIMIENTOS', m, y);
-    y += 18;
+    y += 16;
 
-    const colW = [45, 65, 65, 170, 65];
+    const colW = [42, 58, 55, 150, 75];
     const headers = ['Hora', 'Tipo', 'Pago', 'Descripción', 'Monto'];
     doc.rect(m, y, w, 16).fill('#1e3a5f');
     doc.fillColor('#fff').font('Helvetica-Bold').fontSize(8);
     let x = m;
-    headers.forEach((h, i) => { doc.text(h, x + 3, y + 4, { width: colW[i] }); x += colW[i]; });
+    headers.forEach((h, i) => { doc.text(h, x + 3, y + 4, { width: colW[i], align: i === 4 ? 'right' : 'left' }); x += colW[i]; });
     y += 18;
 
     let totalIng = 0, totalEgr = 0;
     doc.font('Helvetica').fontSize(8);
     movimientos.forEach((mv, idx) => {
-      if (y > doc.page.height - 60) { doc.addPage(); y = 50; }
-      if (idx % 2 === 0) doc.rect(m, y, w, 14).fill('#f8f9fa');
-      doc.fillColor('#333');
+      if (y > doc.page.height - 80) { doc.addPage(); y = 50; }
+      const bgColor = mv.tipo === 'ingreso' ? '#f0fdf4' : '#fef2f2';
+      doc.rect(m, y, w, 15).fill(bgColor);
+      if (idx % 2 === 0) doc.rect(m, y, w, 15).fillOpacity(0.3).fill('#fff').fillOpacity(1);
+      doc.fillOpacity(1);
       x = m;
       const vals = [
         new Date(mv.created_at).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
         mv.tipo === 'ingreso' ? 'Ingreso' : 'Egreso',
         mv.tipo_pago || '—',
-        mv.descripcion || '—',
+        mv.descripcion ? mv.descripcion.substring(0, 30) : '—',
         `${mv.tipo === 'ingreso' ? '+' : '-'} S/ ${Number(mv.monto).toFixed(2)}`,
       ];
-      vals.forEach((v, i) => { doc.text(v, x + 3, y + 3, { width: colW[i] }); x += colW[i]; });
+      doc.fillColor('#333').font('Helvetica').fontSize(8);
+      vals.forEach((v, i) => {
+        const align = i === 4 ? 'right' : 'left';
+        doc.text(v, x + 3, y + 3, { width: colW[i], align });
+        x += colW[i];
+      });
       if (mv.tipo === 'ingreso') totalIng += Number(mv.monto);
       else totalEgr += Number(mv.monto);
-      y += 14;
+      y += 15;
     });
 
-    y += 10;
-    if (y > doc.page.height - 80) { doc.addPage(); y = 50; }
+    y += 12;
+    if (y > doc.page.height - 100) { doc.addPage(); y = 50; }
 
-    doc.rect(m, y, w, 60).fill('#f8f9fa');
+    // Resumen
+    doc.rect(m, y, w, 75).fillAndStroke('#f8f9fa', '#d1d5db');
     doc.fillColor('#333').font('Helvetica').fontSize(10);
-    y += 8;
-    doc.text(`Total Ingresos:`, m + 10, y);
-    doc.text(`S/ ${totalIng.toFixed(2)}`, m + w - 10, y, { align: 'right' });
-    y += 16;
-    doc.text(`Total Egresos:`, m + 10, y);
-    doc.text(`S/ ${totalEgr.toFixed(2)}`, m + w - 10, y, { align: 'right' });
-    y += 16;
-    doc.font('Helvetica-Bold').fontSize(11).fillColor('#1e3a5f');
-    doc.text(`Saldo Final:`, m + 10, y);
-    doc.text(`S/ ${Number(sesion[0].saldo_final).toFixed(2)}`, m + w - 10, y, { align: 'right' });
+    let ry = y + 10;
+    doc.text('Total Ingresos:', m + 12, ry);
+    doc.fillColor('#059669').font('Helvetica-Bold').fontSize(10);
+    doc.text(`S/ ${totalIng.toFixed(2)}`, m + w - 12, ry, { align: 'right' });
+    ry += 18;
+    doc.fillColor('#333').font('Helvetica').fontSize(10);
+    doc.text('Total Egresos:', m + 12, ry);
+    doc.fillColor('#dc2626').font('Helvetica-Bold').fontSize(10);
+    doc.text(`S/ ${totalEgr.toFixed(2)}`, m + w - 12, ry, { align: 'right' });
+    ry += 20;
+    doc.rect(m + 10, ry - 2, w - 20, 18).fill('#1e3a5f');
+    doc.fillColor('#fff').font('Helvetica-Bold').fontSize(12);
+    doc.text('SALDO FINAL:', m + 12, ry + 2);
+    doc.text(`S/ ${Number(sesion[0].saldo_final).toFixed(2)}`, m + w - 12, ry + 2, { align: 'right' });
 
     y = doc.page.height - 50;
     doc.fillColor('#999').font('Helvetica').fontSize(8);
