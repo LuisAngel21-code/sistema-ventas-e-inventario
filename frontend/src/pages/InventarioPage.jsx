@@ -182,6 +182,15 @@ export default function InventarioPage() {
                     );
                   })}
                 </tbody>
+                {stock
+                  .filter(p => (!busqueda || p.nombre.toLowerCase().includes(busqueda.toLowerCase())) &&
+                              (!filtroCategoria || p.categoria === filtroCategoria))
+                  .length === 0 && (
+                  <tfoot><tr><td colSpan={9} className="text-center py-12 text-gray-400">
+                    <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    No hay productos en inventario
+                  </td></tr></tfoot>
+                )}
               </table>
             </div>
           )}
@@ -217,6 +226,12 @@ export default function InventarioPage() {
                     </tr>
                   ))}
                 </tbody>
+                {movimientos.length === 0 && (
+                  <tfoot><tr><td colSpan={6} className="text-center py-12 text-gray-400">
+                    <ArrowUpDown className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    No hay movimientos registrados
+                  </td></tr></tfoot>
+                )}
               </table>
             </div>
           )}
