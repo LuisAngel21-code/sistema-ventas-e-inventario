@@ -3,7 +3,7 @@ const { query, getConnection } = require('../config/database');
 exports.getStock = async (req, res) => {
   try {
     const { rows } = await query(`
-      SELECT id, codigo, nombre, categoria, costo, precio_base, stock, stock_minimo,
+      SELECT id, codigo, nombre, categoria, medida, costo, precio_base, stock, stock_minimo,
              CASE
                WHEN stock <= 0 THEN 'sin_stock'
                WHEN stock <= stock_minimo THEN 'bajo'
