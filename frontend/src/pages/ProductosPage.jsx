@@ -123,7 +123,7 @@ export default function ProductosPage() {
     } catch (err) { showToast(err.message, 'error'); }
   }
 
-  const marcasColchon = ['Paraíso', 'Cisne', 'Avanty', 'Gala', 'Gianlui'];
+  const marcasColchon = ['Paraíso', 'Cisne', 'Avanty', 'Gala', 'Gianlui', 'Quilted-Flex', 'Giventy', 'Rosen', 'Drimer'];
   const filtered = productos.filter(p =>
     !search || p.nombre.toLowerCase().includes(search.toLowerCase()) ||
     (p.codigo && p.codigo.toLowerCase().includes(search.toLowerCase()))
