@@ -272,7 +272,7 @@ export default function ProductosPage() {
                 }
                 <option value="otro">Otro...</option>
               </select>
-              {form.marca_id === 'otro' && (
+              {(form.marca_id === 'otro' || String(form.marca_id).startsWith('temp-')) && (
                 <input className="input-field mt-2" placeholder="Escribir marca..."
                   value={marcaText}
                   onChange={(e) => {
