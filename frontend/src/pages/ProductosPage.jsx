@@ -256,31 +256,30 @@ export default function ProductosPage() {
                   onChange={(e) => setForm({ ...form, categoria: e.target.value })} />
               )}
             </div>
-            <div className="space-y-1.5">
-              <label className="input-label">Marca</label>
-              <select className="input-field"
-                value={form.marca_id}
-                onChange={(e) => setForm({ ...form, marca_id: e.target.value })}>
-                <option value="">Seleccionar...</option>
-                {form.categoria === 'Colchón'
-                  ? marcasColchon.map(m => {
-                      const found = marcas.find(mc => mc.nombre === m);
-                      const id = found ? found.id : `text-${m}`;
-                      return <option key={id} value={id}>{m}</option>;
-                    })
-                  : marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)
-                }
-                <option value="otro">Otro...</option>
-              </select>
-              {(form.marca_id === 'otro' || String(form.marca_id).startsWith('temp-')) && (
-                <input className="input-field mt-2" placeholder="Escribir marca..."
-                  value={marcaText}
-                  onChange={(e) => {
-                    setMarcaText(e.target.value);
-                    setForm({ ...form, marca_id: `temp-${Date.now()}` });
-                  }} />
-              )}
-            </div>
+            {form.categoria === 'Colchón' && (
+              <div className="space-y-1.5">
+                <label className="input-label">Marca</label>
+                <select className="input-field"
+                  value={form.marca_id}
+                  onChange={(e) => setForm({ ...form, marca_id: e.target.value })}>
+                  <option value="">Seleccionar...</option>
+                  {marcasColchon.map(m => {
+                    const found = marcas.find(mc => mc.nombre === m);
+                    const id = found ? found.id : `text-${m}`;
+                    return <option key={id} value={id}>{m}</option>;
+                  })}
+                  <option value="otro">Otro...</option>
+                </select>
+                {(form.marca_id === 'otro' || String(form.marca_id).startsWith('temp-')) && (
+                  <input className="input-field mt-2" placeholder="Escribir marca..."
+                    value={marcaText}
+                    onChange={(e) => {
+                      setMarcaText(e.target.value);
+                      setForm({ ...form, marca_id: `temp-${Date.now()}` });
+                    }} />
+                )}
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Input label="Proveedor" value={form.proveedor}
