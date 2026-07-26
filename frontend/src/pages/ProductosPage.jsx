@@ -164,7 +164,7 @@ export default function ProductosPage() {
               <thead>
                 <tr className="bg-gray-50/50">
                   <th className="table-header">Código</th>
-                  <th className="table-header">Nombre</th>
+                  <th className="table-header">Descripción del producto</th>
                   <th className="table-header">Categoría</th>
                   <th className="table-header">Medida</th>
                   <th className="table-header">Marca</th>
