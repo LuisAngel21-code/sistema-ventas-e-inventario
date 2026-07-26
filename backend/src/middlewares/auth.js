@@ -31,7 +31,7 @@ function authenticate(req, res, next) {
 }
 
 function adminOnly(req, res, next) {
-  if (req.user && req.user.rol === 'admin') {
+  if (req.user && ['admin', 'administradora'].includes(req.user.rol)) {
     return next();
   }
   return res.status(403).json({ error: 'Acceso denegado. Solo administradores.' });
